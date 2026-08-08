@@ -237,9 +237,12 @@ if not st.session_state.usuarios_adm:
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
-# --- EXIBIÇÃO DO TÍTULO NO TOPO ---
-st.markdown(f"<div class='titulo-principal'>{st.session_state.titulo_app}</div>", unsafe_allow_html=True)
-st.markdown(f"<div class='sub-titulo'>{st.session_state.sub_titulo_app}</div>", unsafe_allow_html=True)
+# --- EXIBIÇÃO DO BANNER OU TÍTULO NO TOPO ---
+if st.session_state.banner_path and os.path.exists(st.session_state.banner_path):
+    st.image(st.session_state.banner_path, use_container_width=True)
+else:
+    st.markdown(f"<div class='titulo-principal'>{st.session_state.titulo_app}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='sub-titulo'>{st.session_state.sub_titulo_app}</div>", unsafe_allow_html=True)
 
 # --- BLOCO DE VERSÍCULO AUTOMÁTICO (VERSÃO BKJ 1611) ---
 lista_versiculos_bkj1611 = [
@@ -264,7 +267,7 @@ versiculo_da_vez = lista_versiculos_bkj1611[bloco_index]
 st.markdown(f"""
     <div class='bloco-versiculo'>
         <h3 style='margin-bottom: 5px; color: #ffffff;'>📖 Palavra para Edificação (Versão BKJ 1611)</h3>
-        <p style='font-size: 16px; font-style: italic; margin-bottom: 8px; color: #f0fdf4;'>“{versiculo_da_vez['texto']}”</p>
+        <p style='font-size: 16px; font-style: italic; margin-bottom: 8px; color: #f0fdf4;‘>“{versiculo_da_vez['texto']}”</p>
         <p style='text-align: right; font-weight: bold; margin: 0; color: #bbf7d0;'>— {versiculo_da_vez['referencia']}</p>
     </div>
 """, unsafe_allow_html=True)
@@ -514,13 +517,11 @@ with aba_musicos:
         st.markdown("---")
         st.markdown("### ➕ Cadastrar Novo Músico")
         
-        # Mapeamento dinâmico dos nomes vindos dos participantes cadastrados pelo administrador
         nomes_participantes_musicos = [p["Nome"] for p in st.session_state.participantes] if st.session_state.participantes else ["João Silva", "Maria Oliveira"]
 
-        # Mapeamento das categorias e seus respectivos instrumentos principais
         categorias_instrumentos = {
             "Cordas": ["Violão", "Guitarra", "Contrabaixo", "Violino", "Viola", "Ukulele", "Cello"],
-            "Teclas": ["Teclado", "Piano", "Órgão", "Sintetizador"],
+            "Teclas": ["Piano", "Teclado", "Órgão", "Sintetizador"],
             "Percussão / Bateria": ["Bateria", "Cajon", "Bongô", "Pandeiro", "Congas", "Timbales"],
             "Outros": ["Flauta", "Saxofone", "Trompete", "Clarinet", "Vocal"]
         }
@@ -529,15 +530,12 @@ with aba_musicos:
             col_m1, col_m2, col_m3 = st.columns(3)
             
             with col_m1:
-                # Menu suspenso refletindo os nomes cadastrados pelo administrador
                 nome_musico = st.selectbox("Nome do Músico", [""] + nomes_participantes_musicos)
             
             with col_m2:
-                # Menu suspenso com as categorias predefinidas
                 categoria_inst = st.selectbox("Categoria", list(categorias_instrumentos.keys()))
             
             with col_m3:
-                # Menu suspenso inteligente cujo conteúdo muda conforme a categoria selecionada acima
                 instrumentos_da_categoria = categorias_instrumentos.get(categoria_inst, ["Outro"])
                 instrumento_especifico = st.selectbox("Instrumento Principal", instrumentos_da_categoria)
 
