@@ -1,8 +1,9 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime
 import json
 import os
+import base64
 
 # Configuração da Página Web
 st.set_page_config(
@@ -11,18 +12,23 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- CORES E DESIGN INTERATIVO (CORRIGIDO O CONTRASTE DOS TEXTOS) ---
+# --- ESTILOS CSS PARA CORREÇÃO DE CONTRASTE E TEXTOS ---
 st.markdown("""
     <style>
-    /* Força cor de texto escura em todo o aplicativo para evitar textos sumindo */
     .stApp {
         background-color: #f0f7ff !important;
         color: #1e293b !important;
     }
     
-    /* Textos gerais e títulos */
-    h1, h2, h3, h4, h5, h6, p, span, label {
+    /* Força cor escura em todos os textos, labels e cabeçalhos comuns */
+    h1, h2, h3, h4, h5, h6, p, span, label, .stMarkdown {
         color: #1e293b !important;
+    }
+
+    /* Força visibilidade absoluta nos rótulos de input do Streamlit */
+    .stTextInput label, .stSelectbox label, .stDateInput label, .stTextArea label {
+        color: #0f172a !important;
+        font-weight: 600 !important;
     }
 
     .titulo-principal {
@@ -68,14 +74,16 @@ def carregar_dados_sistema():
         with open(ARQUIVO_CONFIG, "r", encoding="utf-8") as f:
             cfg = json.load(f)
             st.session_state.usuarios_adm = cfg.get("usuarios", {})
-            st.session_state.titulo_app = cfg.get("titulo", "🎵 Central Nova Niterói Matriz")
+            st.session_state.titulo_app = cfg.get("titulo", "Adoração Nova Niterói")
             st.session_state.sub_titulo_app = cfg.get("subtitulo", "Sistema Integrado de Gestão de Louvor, Artes e Escalas")
             st.session_state.nomes_extensoes = cfg.get("extensoes", ["Sede Piratininga", "Extensão São Gonçalo", "Extensão Maricá"])
+            st.session_state.banner_path = cfg.get("banner", "")
     else:
         st.session_state.usuarios_adm = {}
-        st.session_state.titulo_app = "🎵 Central Nova Niterói Matriz"
+        st.session_state.titulo_app = "Adoração Nova Niterói"
         st.session_state.sub_titulo_app = "Sistema Integrado de Gestão de Louvor, Artes e Escalas"
         st.session_state.nomes_extensoes = ["Sede Piratininga", "Extensão São Gonçalo", "Extensão Maricá"]
+        st.session_state.banner_path = ""
 
     if os.path.exists(ARQUIVO_ESCALAS):
         with open(ARQUIVO_ESCALAS, "r", encoding="utf-8") as f:
@@ -106,10 +114,7 @@ def carregar_dados_sistema():
             {"ID": 2, "Nome": "Maria Oliveira", "Instrumento": "Teclado / Piano", "Categoria": "Teclas"},
             {"ID": 3, "Nome": "Carlos Santos", "Instrumento": "Violão", "Categoria": "Cordas"},
             {"ID": 4, "Nome": "Ana Costa", "Instrumento": "Contrabaixo Elétrico", "Categoria": "Cordas"},
-            {"ID": 5, "Nome": "Lucas Pereira", "Instrumento": "Bateria", "Categoria": "Percussão / Bateria"},
-            {"ID": 6, "Nome": "Beatriz Lima", "Instrumento": "Violoncelo / Violino", "Categoria": "Cordas"},
-            {"ID": 7, "Nome": "Marcos Souza", "Instrumento": "Cajon / Percussão Leve", "Categoria": "Percussão / Bateria"},
-            {"ID": 8, "Nome": "Juliana Rocha", "Instrumento": "Synthesizer / Pads", "Categoria": "Teclas"}
+            {"ID": 5, "Nome": "Lucas Pereira", "Instrumento": "Bateria", "Categoria": "Percussão / Bateria"}
         ]
 
     if os.path.exists(ARQUIVO_LOGS):
@@ -134,7 +139,8 @@ def salvar_dados_sistema():
             "usuarios": st.session_state.usuarios_adm,
             "titulo": st.session_state.titulo_app,
             "subtitulo": st.session_state.sub_titulo_app,
-            "extensoes": st.session_state.nomes_extensoes
+            "extensoes": st.session_state.nomes_extensoes,
+            "banner": st.session_state.banner_path
         }, f, ensure_ascii=False, indent=4)
 
 carregar_dados_sistema()
@@ -170,9 +176,12 @@ if not st.session_state.usuarios_adm:
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
-# --- HEADER VISUAL ---
-st.markdown(f"<div class='titulo-principal'>{st.session_state.titulo_app}</div>", unsafe_allow_html=True)
-st.markdown(f"<div class='sub-titulo'>{st.session_state.sub_titulo_app}</div>", unsafe_allow_html=True)
+# --- EXIBIÇÃO DO BANNER OU TÍTULO NO TOPO ---
+if st.session_state.banner_path and os.path.exists(st.session_state.banner_path):
+    st.image(st.session_state.banner_path, use_container_width=True)
+else:
+    st.markdown(f"<div class='titulo-principal'>{st.session_state.titulo_app}</div>", unsafe_allow_html=True)
+    st.markdown(f"<div class='sub-titulo'>{st.session_state.sub_titulo_app}</div>", unsafe_allow_html=True)
 
 # --- SISTEMA DE LOGIN PÚBLICO / ADM ---
 st.markdown("<div class='bloco-admin'>", unsafe_allow_html=True)
@@ -205,16 +214,27 @@ else:
             st.rerun()
 st.markdown("</div>", unsafe_allow_html=True)
 
-# --- PAINEL DE CONFIGURAÇÕES GLOBAIS (APENAS ADM) ---
+# --- PAINEL DE CONFIGURAÇÕES GLOBAIS E UPLOAD DE BANNER (APENAS ADM) ---
 if st.session_state.logado:
     with st.container():
         st.markdown("<div class='bloco-admin'>", unsafe_allow_html=True)
-        st.markdown("### ⚙️ Painel de Configurações e Gerenciamento de ADMs")
+        st.markdown("### ⚙️ Painel de Configurações, Capa e ADMs")
+        
         col_t1, col_t2 = st.columns(2)
         with col_t1:
             edt_titulo = st.text_input("Editar Título do Aplicativo", value=st.session_state.titulo_app)
         with col_t2:
             edt_sub = st.text_input("Editar Subtítulo do Aplicativo", value=st.session_state.sub_titulo_app)
+
+        st.markdown("#### 🖼️ Inserir Imagem de Capa (Banner Superior)")
+        arquivo_banner = st.file_uploader("Escolha uma imagem (PNG, JPG, JPEG) para usar como banner de capa", type=["png", "jpg", "jpeg"])
+        
+        if arquivo_banner is not None:
+            caminho_salvar = "banner_capa.png"
+            with open(caminho_salvar, "wb") as f:
+                f.write(arquivo_banner.getbuffer())
+            st.session_state.banner_path = caminho_salvar
+            st.success("Banner enviado com sucesso! Clique em salvar alterações abaixo para aplicar.")
 
         st.markdown("**Nomes das 3 Extensões Cadastradas:**")
         col_ex0, col_ex1, col_ex2 = st.columns(3)
@@ -224,13 +244,6 @@ if st.session_state.logado:
             nome_ext1 = st.text_input("Extensão 2", value=st.session_state.nomes_extensoes[1])
         with col_ex2:
             nome_ext2 = st.text_input("Extensão 3", value=st.session_state.nomes_extensoes[2])
-
-        st.markdown("**Adicionar Novo Administrador Auxiliar:**")
-        col_ad1, col_ad2 = st.columns(2)
-        with col_ad1:
-            novo_adm_nome = st.text_input("Usuário do Novo Líder")
-        with col_ad2:
-            novo_adm_senha = st.text_input("Senha do Novo Líder", type="password")
 
         if st.button("💾 SALVAR ALTERAÇÕES GLOBAIS"):
             novos_nomes_lista = [nome_ext0, nome_ext1, nome_ext2]
@@ -245,10 +258,6 @@ if st.session_state.logado:
             st.session_state.titulo_app = edt_titulo
             st.session_state.sub_titulo_app = edt_sub
             st.session_state.nomes_extensoes = novos_nomes_lista
-
-            if novo_adm_nome and novo_adm_senha:
-                st.session_state.usuarios_adm[novo_adm_nome] = novo_adm_senha
-                registrar_alerta(f"Novo administrador adicionado: {novo_adm_nome}")
 
             salvar_dados_sistema()
             st.success("Configurações atualizadas com sucesso!")
@@ -319,8 +328,6 @@ with aba_escalas:
 # 2. ABA DE MÚSICOS
 with aba_musicos:
     st.subheader("🎸 Equipe de Músicos & Instrumentos")
-    st.markdown("Visualização da equipe de músicos dividida por categorias de instrumentos de Cordas, Teclas e Percussão/Bateria.")
-
     if st.session_state.musicos:
         df_musicos = pd.DataFrame(st.session_state.musicos)
         st.dataframe(df_musicos, use_container_width=True)
@@ -329,8 +336,7 @@ with aba_musicos:
 
     if st.session_state.logado:
         st.markdown("---")
-        st.markdown("### 🛠️ Adicionar ou Alterar Instrumento do Músico")
-        
+        st.markdown("### 🛠️ Adicionar ou Alterar Músico")
         with st.form("form_novo_musico"):
             col_m1, col_m2, col_m3 = st.columns(3)
             with col_m1:
@@ -338,13 +344,9 @@ with aba_musicos:
             with col_m2:
                 categoria_inst = st.selectbox("Categoria", ["Cordas", "Teclas", "Percussão / Bateria", "Outros"])
             with col_m3:
-                instrumento_especifico = st.selectbox("Instrumento Principal", [
-                    "Guitarra Base", "Guitarra Solo", "Violão", "Contrabaixo Elétrico", 
-                    "Teclado / Piano", "Synthesizer / Pads", "Órgão", 
-                    "Bateria", "Cajon", "Bongô / Percussão Acústica", "Violino / Violoncelo"
-                ])
+                instrumento_especifico = st.text_input("Instrumento Principal")
 
-            if st.form_submit_button("➕ Cadastrar / Atualizar Músico"):
+            if st.form_submit_button("➕ Cadastrar Músico"):
                 if nome_musico:
                     novo_id = len(st.session_state.musicos) + 1
                     st.session_state.musicos.append({
@@ -356,16 +358,6 @@ with aba_musicos:
                     salvar_dados_sistema()
                     st.success(f"Músico {nome_musico} adicionado com sucesso!")
                     st.rerun()
-
-        if st.session_state.musicos:
-            st.markdown("### 🗑️ Remover Músico da Equipe")
-            ids_musicos = [m["ID"] for m in st.session_state.musicos]
-            id_del_musico = st.selectbox("Selecione o ID do Músico para Excluir", ids_musicos)
-            if st.button("Excluir Músico Selecionado"):
-                st.session_state.musicos = [m for m in st.session_state.musicos if m["ID"] != id_del_musico]
-                salvar_dados_sistema()
-                st.success("Músico removido com sucesso!")
-                st.rerun()
 
 # 3. ABA DE REPERTÓRIO
 with aba_repertorio:
@@ -405,7 +397,6 @@ with aba_danca:
 
     if st.session_state.logado:
         st.markdown("---")
-        st.markdown("### 🛠️ Gerenciar Ministério de Dança")
         with st.form("form_danca"):
             d_data = st.date_input("Data do Evento/Ensaio")
             d_responsaveis = st.text_input("Responsáveis / Coreógrafas")
@@ -420,15 +411,6 @@ with aba_danca:
                 st.session_state.danca.append(novo_registro_danca)
                 salvar_dados_sistema()
                 st.success("Registro de dança adicionado!")
-                st.rerun()
-
-        if st.session_state.danca:
-            ids_danca = [item["ID"] for item in st.session_state.danca]
-            id_del_danca = st.selectbox("Selecione o ID para excluir do Ministério de Dança", ids_danca)
-            if st.button("🗑️ Excluir Registro de Dança"):
-                st.session_state.danca = [item for item in st.session_state.danca if item["ID"] != id_del_danca]
-                salvar_dados_sistema()
-                st.success("Registro de dança excluído!")
                 st.rerun()
 
 # 5. ABA DE DEVOCIONAL E ALERTAS
