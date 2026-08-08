@@ -13,7 +13,7 @@ st.set_page_config(
 )
 
 # --- CONVERSÃO DA FOTO DE FUNDO ---
-CAMINHO_FUNDO_FOTO = "matt-richmond-8fhGzN5ktJo-unsplash_2.jpg"
+CAMINHO_FUNDO_FOTO = "C:\Users\lhpcu\OneDrive\Desktop"
 if os.path.exists(CAMINHO_FUNDO_FOTO):
     with open(CAMINHO_FUNDO_FOTO, "rb") as f:
         img_base64 = base64.b64encode(f.read()).decode("utf-8")
