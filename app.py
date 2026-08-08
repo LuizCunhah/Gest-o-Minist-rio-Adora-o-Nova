@@ -11,12 +11,20 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- CORES E DESIGN INTERATIVO ---
+# --- CORES E DESIGN INTERATIVO (CORRIGIDO O CONTRASTE DOS TEXTOS) ---
 st.markdown("""
     <style>
+    /* Força cor de texto escura em todo o aplicativo para evitar textos sumindo */
     .stApp {
         background-color: #f0f7ff !important;
+        color: #1e293b !important;
     }
+    
+    /* Textos gerais e títulos */
+    h1, h2, h3, h4, h5, h6, p, span, label {
+        color: #1e293b !important;
+    }
+
     .titulo-principal {
         font-size: 38px !important;
         font-weight: bold !important;
@@ -34,6 +42,7 @@ st.markdown("""
         background-color: #2563eb !important;
         color: white !important;
         font-weight: bold;
+        border-radius: 8px;
     }
     .bloco-admin {
         background-color: #ffffff;
@@ -41,6 +50,7 @@ st.markdown("""
         border-radius: 12px;
         border: 2px solid #3b82f6;
         margin-bottom: 20px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
     </style>
     """, unsafe_allow_html=True)
@@ -54,7 +64,6 @@ ARQUIVO_DANCA = "dados_danca.json"
 ARQUIVO_MUSICOS = "dados_musicos.json"
 
 def carregar_dados_sistema():
-    # Verifica se a configuração existe. Se não existir, indicamos que precisa criar o admin inicial.
     if os.path.exists(ARQUIVO_CONFIG):
         with open(ARQUIVO_CONFIG, "r", encoding="utf-8") as f:
             cfg = json.load(f)
@@ -88,7 +97,6 @@ def carregar_dados_sistema():
     else:
         st.session_state.danca = []
 
-    # Banco pré-preenchido de Músicos com Cordas, Teclas e Percussão
     if os.path.exists(ARQUIVO_MUSICOS):
         with open(ARQUIVO_MUSICOS, "r", encoding="utf-8") as f:
             st.session_state.musicos = json.load(f)
@@ -141,10 +149,11 @@ def registrar_alerta(txt):
     st.session_state.logs_notificacoes.insert(0, f"[{horario}] {txt}")
     salvar_dados_sistema()
 
-# --- TELA DE PRIMEIRO ACESSO (CADASTRO DA SENHA DO ADMINISTRADOR SE NÃO HOUVER NENHUM) ---
+# --- TELA DE PRIMEIRO ACESSO (CADASTRO DA SENHA DO ADMINISTRADOR) ---
 if not st.session_state.usuarios_adm:
     st.markdown("<div class='bloco-admin'>", unsafe_allow_html=True)
-    st.warning("⚠️ **Configuração Inicial do Sistema:** Nenhuma conta de Administrador foi encontrada. Crie a senha inicial de Administrador para prosseguir:")
+    st.markdown("### ⚠️ Configuração Inicial do Sistema")
+    st.info("Nenhuma conta de Administrador foi encontrada. Crie a senha inicial de Administrador para prosseguir:")
     with st.form("form_primeiro_admin"):
         novo_user = st.text_input("Nome do Usuário Administrador Principal", value="admin")
         nova_senha = st.text_input("Senha do Administrador", type="password")
@@ -199,6 +208,7 @@ st.markdown("</div>", unsafe_allow_html=True)
 # --- PAINEL DE CONFIGURAÇÕES GLOBAIS (APENAS ADM) ---
 if st.session_state.logado:
     with st.container():
+        st.markdown("<div class='bloco-admin'>", unsafe_allow_html=True)
         st.markdown("### ⚙️ Painel de Configurações e Gerenciamento de ADMs")
         col_t1, col_t2 = st.columns(2)
         with col_t1:
@@ -243,7 +253,7 @@ if st.session_state.logado:
             salvar_dados_sistema()
             st.success("Configurações atualizadas com sucesso!")
             st.rerun()
-    st.divider()
+        st.markdown("</div>", unsafe_allow_html=True)
 
 # --- NAVEGAÇÃO POR ABAS ---
 aba_escalas, aba_musicos, aba_repertorio, aba_danca, aba_devocional = st.tabs([
@@ -306,7 +316,7 @@ with aba_escalas:
                         st.success("Registro excluído com sucesso!")
                         st.rerun()
 
-# 2. NOVA ABA MELHORADA DE MÚSICOS (CORDAS, TECLAS E PERCUSSÃO)
+# 2. ABA DE MÚSICOS
 with aba_musicos:
     st.subheader("🎸 Equipe de Músicos & Instrumentos")
     st.markdown("Visualização da equipe de músicos dividida por categorias de instrumentos de Cordas, Teclas e Percussão/Bateria.")
@@ -328,7 +338,6 @@ with aba_musicos:
             with col_m2:
                 categoria_inst = st.selectbox("Categoria", ["Cordas", "Teclas", "Percussão / Bateria", "Outros"])
             with col_m3:
-                # Caixa de diálogo interativa com instrumentos pré-preenchidos baseados na categoria escolhida
                 instrumento_especifico = st.selectbox("Instrumento Principal", [
                     "Guitarra Base", "Guitarra Solo", "Violão", "Contrabaixo Elétrico", 
                     "Teclado / Piano", "Synthesizer / Pads", "Órgão", 
@@ -348,7 +357,6 @@ with aba_musicos:
                     st.success(f"Músico {nome_musico} adicionado com sucesso!")
                     st.rerun()
 
-        # Exclusão interativa de músicos
         if st.session_state.musicos:
             st.markdown("### 🗑️ Remover Músico da Equipe")
             ids_musicos = [m["ID"] for m in st.session_state.musicos]
