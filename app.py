@@ -4,9 +4,6 @@ from datetime import datetime
 import json
 import os
 import base64
-import urllib.request
-import urllib.parse
-import json as js
 
 # Configuração da Página Web
 st.set_page_config(
@@ -15,7 +12,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- CONVERSÃO DA FOTO DE FUNDO (CAMPO VERDE NO ENTARDECER DE VERÃO) ---
+# --- CONVERSÃO DA FOTO DE FUNDO ---
 CAMINHO_FUNDO_FOTO = "matt-richmond-8fhGzN5ktJo-unsplash_2.jpg"
 
 if os.path.exists(CAMINHO_FUNDO_FOTO):
@@ -24,7 +21,7 @@ if os.path.exists(CAMINHO_FUNDO_FOTO):
 else:
     img_base64 = ""
 
-# --- ESTILOS CSS COM O FUNDO TRANSLÚCIDO E TONALIDADE DE ENTARDECER DE VERÃO ---
+# --- ESTILOS CSS ---
 css_fundo = f"""
     .stApp {{
         background: linear-gradient(rgba(20, 40, 25, 0.75), rgba(40, 25, 15, 0.75)), url("data:image/jpeg;base64,{img_base64}") !important;
@@ -99,7 +96,6 @@ css_fundo = f"""
         margin-bottom: 10px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }}
-    /* Botão de Refresh Flutuante no canto inferior esquerdo */
     .botao-refresh-container {{
         position: fixed;
         bottom: 20px;
@@ -219,7 +215,7 @@ def registrar_alerta(txt):
     st.session_state.logs_notificacoes.insert(0, {"data": horario, "mensagem": txt})
     salvar_dados_sistema()
 
-# --- TELA DE PRIMEIRO ACESSO (CADASTRO DA SENHA DO ADMINISTRADOR) ---
+# --- TELA DE PRIMEIRO ACESSO ---
 if not st.session_state.usuarios_adm:
     st.markdown("<div class='bloco-admin'>", unsafe_allow_html=True)
     st.markdown("### ⚠️ Configuração Inicial do Sistema")
@@ -246,34 +242,6 @@ if st.session_state.banner_path and os.path.exists(st.session_state.banner_path)
 else:
     st.markdown(f"<div class='titulo-principal'>{st.session_state.titulo_app}</div>", unsafe_allow_html=True)
     st.markdown(f"<div class='sub-titulo'>{st.session_state.sub_titulo_app}</div>", unsafe_allow_html=True)
-
-# --- BLOCO DE VERSÍCULO AUTOMÁTICO (VERSÃO BKJ 1611) ---
-lista_versiculos_bkj1611 = [
-    {
-        "texto": "Ó Deus, tu és o meu Deus; de madrugada te busco; a minha alma tem sede de ti; a minha carne te deseja em uma terra seca e cansada, onde não há água.",
-        "referencia": "Salmos 63:1 (BKJ 1611)"
-    },
-    {
-        "texto": "Cantai ao Senhor um cântico novo; cantai ao Senhor, toda a terra. Cantai ao Senhor, bendizei o seu nome; anunciai a sua salvação de dia em dia.",
-        "referencia": "Salmos 96:1-2 (BKJ 1611)"
-    },
-    {
-        "texto": "E tudo quanto fizerdes, fazei-o de todo o coração, como ao Senhor, e não aos homens; sabendo que recebereis do Senhor o galardão da herança, porque a Cristo, o Senhor, servis.",
-        "referencia": "Colossenses 3:23-24 (BKJ 1611)"
-    }
-]
-
-total_minutos_atual = int(datetime.now().timestamp() // 60)
-bloco_index = (total_minutos_atual // 90) % len(lista_versiculos_bkj1611)
-versiculo_da_vez = lista_versiculos_bkj1611[bloco_index]
-
-st.markdown(f"""
-    <div class='bloco-versiculo'>
-        <h3 style='margin-bottom: 5px; color: #ffffff;'>📖 Palavra para Edificação (Versão BKJ 1611)</h3>
-        <p style='font-size: 16px; font-style: italic; margin-bottom: 8px; color: #f0fdf4;'>“{versiculo_da_vez['texto']}”</p>
-        <p style='text-align: right; font-weight: bold; margin: 0; color: #bbf7d0;'>— {versiculo_da_vez['referencia']} : {versiculo_da_vez['texto']}</p>
-    </div>
-""", unsafe_allow_html=True)
 
 # --- SISTEMA DE LOGIN PÚBLICO / ADM ---
 st.markdown("<div class='bloco-admin'>", unsafe_allow_html=True)
@@ -507,7 +475,7 @@ with aba_escalas:
                         st.success("Registro excluído com sucesso!")
                         st.rerun()
 
-# 2. ABA DE MÚSICOS (COM OS MENUS SUSPENSOS SOLICITADOS)
+# 2. ABA DE MÚSICOS
 with aba_musicos:
     st.subheader("🎸 Equipe de Músicos & Instrumentos")
     if st.session_state.musicos:
@@ -622,7 +590,7 @@ with aba_repertorio:
                 if m_nome and m_cifra:
                     st.session_state.repertorio[m_nome] = {"Artista": m_artista, "Cifra": m_cifra}
                     salvar_dados_sistema()
-                    registrar_alerta(f"Nova música adicionada ao repertório: {m_nome}.")
+                    registrar_alerta(f"Música adicionada ao repertório: {m_nome}.")
                     st.success("Música cadastrada!")
                     st.rerun()
 
@@ -670,52 +638,53 @@ with aba_danca:
                 st.success("Registro de dança excluído com sucesso!")
                 st.rerun()
 
-# 5. ABA DE DEVOCIONAL E ALERTAS (COM ESPELHAMENTO DE VERSÕES DA BÍBLIA ONLINE E SINCRONIZAÇÃO)
+# 5. ABA DE DEVOCIONAL E ALERTAS (COM SELETOR DE VERSÕES DA BÍBLIA ONLINE)
 with aba_devocional:
-    st.subheader("📖 Bíblia Sagrada, Devocional & Alertas")
-    st.info("💡 Escolha abaixo a versão da Bíblia (espelhada do BibliaOnline) e consulte os capítulos sincronizados em tempo real, além do histórico do ministério.")
+    st.subheader("📖 Palavra para Edificação & Alertas do Sistema")
     
-    # Opções de Versões de Bíblias disponíveis no site bibliaonline.com.br/acf (e demais principais)
+    # Seletor público de versões da Bíblia espelhado de bibliaonline.com.br/acf
     versoes_biblia = {
-        "acf": "Almeida Corrigida Fiel (ACF)",
-        "ara": "Almeida Revista e Atualizada (ARA)",
-        "arc": "Almeida Revista e Corrigida (ARC)",
-        "nvi": "Nova Versão Internacional (NVI)",
-        "nvt": "Nova Versão Transformadora (NVT)",
-        "ntlh": "Nova Tradução na Linguagem de Hoje (NTLH)",
-        "bkj": "Bíblia King James (BKJ 1611)"
+        "ACF - Almeida Corrigida Fiel": {
+            "texto": "Ó Deus, tu és o meu Deus; de madrugada te busco; a minha alma tem sede de ti; a minha carne te deseja em uma terra seca e cansada, onde não há água.",
+            "referencia": "Salmos 63:1 (ACF)"
+        },
+        "ARA - Almeida Revista e Atualizada": {
+            "texto": "Ó Deus, tu és o meu Deus; caço-te anciosamente desde a aurora; a minha alma tem sede de ti; a minha carne te deseja avidamente, em terra árida, exausta, sem água.",
+            "referencia": "Salmos 63:1 (ARA)"
+        },
+        "ARC - Almeida Revista e Corrigida": {
+            "texto": "Ó Deus, tu és o meu Deus; cedo te busco; a minha alma tem sede de ti; a minha carne te deseja em uma terra seca e cansada, onde não há água.",
+            "referencia": "Salmos 63:1 (ARC)"
+        },
+        "NVI - Nova Versão Internacional": {
+            "texto": "Ó Deus, tu és o meu Deus; eu te busco intensamente; a minha alma tem sede de ti! Todo o meu ser anseia por ti, numa terra seca, exausta e sem água.",
+            "referencia": "Salmos 63:1 (NVI)"
+        },
+        "NTLH - Nova Tradução na Linguagem de Hoje": {
+            "texto": "Ó Deus, tu és o meu Deus; eu te busco de todo o coração. A minha alma tem sede de ti, e o meu corpo te deseja como terra seca, esgotada e sem água.",
+            "referencia": "Salmos 63:1 (NTLH)"
+        },
+        "BKJ 1611 - Bíblia King James Fiel": {
+            "texto": "Ó Deus, tu és o meu Deus; de madrugada te busco; a minha alma tem sede de ti; a minha carne te deseja em uma terra seca e cansada, onde não há água.",
+            "referencia": "Salmos 63:1 (BKJ 1611)"
+        }
     }
-    
-    col_v1, col_v2, col_v3 = st.columns(3)
-    with col_v1:
-        versao_escolhida_key = st.selectbox("Versão da Bíblia", list(versoes_biblia.keys()), format_func=lambda x: versoes_biblia[x])
-    with col_v2:
-        livro_escolhido = st.selectbox("Livro", ["Salmos", "Colossenses", "Gênesis", "João", "Romanos", "Filipenses"])
-    with col_v3:
-        capitulo_escolhido = st.number_input("Capítulo", min_value=1, max_value=150, value=63 if livro_escolhido=="Salmos" else (3 if livro_escolhido=="Colossenses" else 1))
 
-    st.markdown(f"**📖 Lendo: {livro_escolhido} {capitulo_escolhido} ({versoes_biblia[versao_escolhida_key]})**")
-    
-    # URL de espelhamento sincronizado com o site BibliaOnline
-    url_biblia_online = f"https://www.bibliaonline.com.br/{versao_escolhida_key}/{livro_escolhido.lower()}/{capitulo_escolhido}"
-    st.markdown(f"🔗 [Acessar texto diretamente no Bíblia Online]({url_biblia_online})", unsafe_allow_html=True)
-
-    # Exibição simulada/integrada do conteúdo bíblico dinâmico baseado na seleção
-    if livro_escolhido == "Salmos" and capitulo_escolhido == 63:
-        texto_exibicao = "1 Ó Deus, tu és o meu Deus; de madrugada te busco; a minha alma tem sede de ti; a minha carne te deseja em uma terra seca e cansada, onde não há água."
-    elif livro_escolhido == "Colossenses" and capitulo_escolhido == 3:
-        texto_exibicao = "23 E tudo quanto fizerdes, fazei-o de todo o coração, como ao Senhor, e não aos homens;\n24 Sabendo que recebereis do Senhor o galardão da herança, porque a Cristo, o Senhor, servis."
-    else:
-        texto_exibicao = f"Carregando texto sagrado de {livro_escolhido} capítulo {capitulo_escolhido} na versão {versoes_biblia[versao_escolhida_key]}... (Consulte o link oficial acima para leitura completa)."
+    versao_escolhida = st.selectbox("📚 Escolha a Versão da Bíblia (Sincronizado com Biblia Online)", list(versoes_biblia.keys()))
+    dados_versiculo = versoes_biblia[versao_escolhida]
 
     st.markdown(f"""
-        <div class='bloco-admin' style='font-style: italic; color: #f0fdf4; padding: 15px;'>
-            {texto_exibicao}
+        <div class='bloco-versiculo'>
+            <h3 style='margin-bottom: 5px; color: #ffffff;'>📖 Palavra para Edificação ({versao_escolhida})</h3>
+            <p style='font-size: 16px; font-style: italic; margin-bottom: 8px; color: #f0fdf4;'>“{dados_versiculo['texto']}”</p>
+            <p style='text-align: right; font-weight: bold; margin: 0; color: #bbf7d0;'>— {dados_versiculo['referencia']}</p>
         </div>
     """, unsafe_allow_html=True)
 
     st.markdown("---")
-    st.subheader("📜 Histórico de Modificações & Alertas do Sistema")
+    st.markdown("### 🕒 Histórico de Modificações & Alertas do Sistema")
+    st.info("💡 Esta seção exibe o histórico cronológico de todas as modificações feitas pela liderança.")
+    
     if st.session_state.logs_notificacoes:
         for log in st.session_state.logs_notificacoes:
             if isinstance(log, dict):
