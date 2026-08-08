@@ -157,7 +157,7 @@ def carregar_dados_sistema():
     else:
         st.session_state.musicos = [
             {"ID": 1, "Nome": "João Silva", "Instrumento": "Guitarra Base/Solo", "Categoria": "Cordas"},
-            {"ID": 2, "Nome": "Maria Oliveira", "Instrumento": "Teclado / Piano", "Categoria": "Teclas"}
+            {"ID": 2, "Nome": "Maria Oliveira", "Instrumento": "Teclado", "Categoria": "Teclas"}
         ]
 
     if os.path.exists(ARQUIVO_PARTICIPANTES):
@@ -492,9 +492,9 @@ with aba_musicos:
 
         categorias_instrumentos = {
             "Cordas": ["Violão", "Guitarra", "Contrabaixo", "Violino", "Viola", "Ukulele", "Cello"],
-            "Teclas": ["Piano", "Teclado", "Órgão", "Sintetizador"],
-            "Percussão / Bateria": ["Bateria", "Cajon", "Bongô", "Pandeiro", "Congas", "Timbales"],
-            "Outros": ["Flauta", "Saxofone", "Trompete", "Clarinet", "Vocal"]
+            "Teclas": ["Teclado", "Piano", "Órgão", "Sintetizador"],
+            "Percussão / Bateria": ["Bateria", "Cajon", "Bongô", "Pandeiro", "Congas", "Timbales", "Percussão Geral"],
+            "Outros": ["Flauta", "Saxofone", "Trompete", "Clarinete", "Vocal"]
         }
 
         with st.form("form_novo_musico"):
@@ -638,35 +638,35 @@ with aba_danca:
                 st.success("Registro de dança excluído com sucesso!")
                 st.rerun()
 
-# 5. ABA DE DEVOCIONAL E ALERTAS (COM SELETOR DE VERSÕES DA BÍBLIA ONLINE)
+# 5. ABA DE DEVOCIONAL E ALERTAS (COM SELETOR ABERTO DE VERSÕES DA BÍBLIA ONLINE)
 with aba_devocional:
     st.subheader("📖 Palavra para Edificação & Alertas do Sistema")
     
-    # Seletor público de versões da Bíblia espelhado de bibliaonline.com.br/acf
+    # Seletor público aberto de versões da Bíblia espelhado de bibliaonline.com.br/acf
     versoes_biblia = {
         "ACF - Almeida Corrigida Fiel": {
-            "texto": "Ó Deus, tu és o meu Deus; de madrugada te busco; a minha alma tem sede de ti; a minha carne te deseja em uma terra seca e cansada, onde não há água.",
-            "referencia": "Salmos 63:1 (ACF)"
+            "referencia": "Colossenses 3:23-24 (ACF)",
+            "texto": "E tudo quanto fizerdes, fazei-o de todo o coração, como ao Senhor, e não aos homens, sabendo que recebereis do Senhor o galardão da herança, porque a Cristo, o Senhor, servis."
         },
         "ARA - Almeida Revista e Atualizada": {
-            "texto": "Ó Deus, tu és o meu Deus; caço-te anciosamente desde a aurora; a minha alma tem sede de ti; a minha carne te deseja avidamente, em terra árida, exausta, sem água.",
-            "referencia": "Salmos 63:1 (ARA)"
+            "referencia": "Colossenses 3:23-24 (ARA)",
+            "texto": "Tudo quanto fizerdes, fazei-o de todo o coração, como para o Senhor e não para homens, cientes de que recebereis do Senhor a recompensa da herança. A Cristo, o Senhor, é que estais servindo."
         },
         "ARC - Almeida Revista e Corrigida": {
-            "texto": "Ó Deus, tu és o meu Deus; cedo te busco; a minha alma tem sede de ti; a minha carne te deseja em uma terra seca e cansada, onde não há água.",
-            "referencia": "Salmos 63:1 (ARC)"
+            "referencia": "Colossenses 3:23-24 (ARC)",
+            "texto": "E tudo quanto fizerdes, fazei-o de todo o coração, como ao Senhor e não aos homens, sabendo que recebereis do Senhor o galardão da herança, porque a Cristo, o Senhor, servis."
         },
         "NVI - Nova Versão Internacional": {
-            "texto": "Ó Deus, tu és o meu Deus; eu te busco intensamente; a minha alma tem sede de ti! Todo o meu ser anseia por ti, numa terra seca, exausta e sem água.",
-            "referencia": "Salmos 63:1 (NVI)"
+            "referencia": "Colossenses 3:23-24 (NVI)",
+            "texto": "Tudo o que fizerem, façam-no de todo o coração, como para o Senhor, e não para os homens, sabendo que receberão do Senhor a recompensa da herança. É a Cristo, o Senhor, que vocês estão servindo."
         },
         "NTLH - Nova Tradução na Linguagem de Hoje": {
-            "texto": "Ó Deus, tu és o meu Deus; eu te busco de todo o coração. A minha alma tem sede de ti, e o meu corpo te deseja como terra seca, esgotada e sem água.",
-            "referencia": "Salmos 63:1 (NTLH)"
+            "referencia": "Colossenses 3:23-24 (NTLH)",
+            "texto": "O que vocês fizerem, façam de todo o coração, como se estivessem servindo ao Senhor e não às pessoas. Lembrem-se de que o Senhor lhes dará como prêmio aquilo que ele tem guardado para o seu povo. Pois o Senhor que vocês estão servindo é Cristo."
         },
         "BKJ 1611 - Bíblia King James Fiel": {
-            "texto": "Ó Deus, tu és o meu Deus; de madrugada te busco; a minha alma tem sede de ti; a minha carne te deseja em uma terra seca e cansada, onde não há água.",
-            "referencia": "Salmos 63:1 (BKJ 1611)"
+            "referencia": "Colossenses 3:23-24 (BKJ 1611)",
+            "texto": "E tudo o que fizerdes, fazei-o de todo o coração, como ao Senhor, e não aos homens; sabendo que recebereis do Senhor a recompensa da herança, porque serveis a Cristo, o Senhor."
         }
     }
 
@@ -675,7 +675,7 @@ with aba_devocional:
 
     st.markdown(f"""
         <div class='bloco-versiculo'>
-            <h3 style='margin-bottom: 5px; color: #ffffff;'>📖 Palavra para Edificação ({versao_escolhida})</h3>
+            <h3 style='margin-bottom: 5px; color: #ffffff;'>📖 Palavra para Edificação</h3>
             <p style='font-size: 16px; font-style: italic; margin-bottom: 8px; color: #f0fdf4;'>“{dados_versiculo['texto']}”</p>
             <p style='text-align: right; font-weight: bold; margin: 0; color: #bbf7d0;'>— {dados_versiculo['referencia']}</p>
         </div>
