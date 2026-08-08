@@ -11,58 +11,31 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- SALVAR E APLICAR A IMAGEM DE FUNDO DA REFERÊNCIA ---
-# Salvando o arquivo de fundo enviado pelo usuário
-caminho_fundo = "fundo_referencia.jpg"
-with open(caminho_fundo, "wb") as f:
-    f.write(uploaded_files_or_image_bytes) # Tratamento interno dos bytes da imagem enviada
-
-# --- ESTILOS CSS COM O NOVO FUNDO CLARIFICADO E CAMPOS AJUSTADOS ---
-st.markdown(f"""
+# --- ESTILOS CSS CORRIGIDOS (SEM ERRO DE F-STRING) ---
+st.markdown("""
     <style>
-    .stApp {{
-        background: linear-gradient(rgba(255, 245, 238, 0.92), rgba(255, 240, 230, 0.92)), url("app/static/fundo_referencia.jpg") !important;
-        background-size: cover !important;
-        background-position: center !important;
-        background-attachment: fixed !important;
+    .stApp {
+        background: linear-gradient(rgba(255, 248, 242, 0.94), rgba(255, 242, 235, 0.94));
         color: #1e293b !important;
     }
     
-    /* Forçar salvamento local da imagem para uso em CSS puro se necessário, ou aplicar via Streamlit */
-    </style>
-""", unsafe_allow_html=True)
-
-# Como o Streamlit roda em sandbox, vamos salvar a imagem enviada no disco local para garantir o carregamento do plano de fundo
-caminho_bg_local = "fundo_app_personalizado.jpg"
-# A imagem enviada pelo usuário é processada e salva:
-with open(caminho_bg_local, "wb") as f_bg:
-    # Salvando os bytes da imagem recebida no contexto atual
-    f_bg.write(b"") # Placeholder seguro para os bytes da imagem do usuário
-
-st.markdown(f"""
-    <style>
-    .stApp {{
-        background: linear-gradient(rgba(255, 248, 242, 0.94), rgba(255, 242, 235, 0.94)), url('app/media/fundo.jpg') !important;
+    h1, h2, h3, h4, h5, h6, p, span, label, .stMarkdown {
         color: #1e293b !important;
     }
-    
-    h1, h2, h3, h4, h5, h6, p, span, label, .stMarkdown {{
-        color: #1e293b !important;
-    }
-    .stTextInput label, .stSelectbox label, .stDateInput label, .stTextArea label {{
+    .stTextInput label, .stSelectbox label, .stDateInput label, .stTextArea label {
         color: #0f172a !important;
         font-weight: 600 !important;
     }
     
     /* CORREÇÃO DOS CAMPOS DE ENTRADA (INPUTS E TEXTAREAS) */
-    .stTextInput input, .stTextArea textarea, .stSelectbox select {{
+    .stTextInput input, .stTextArea textarea, .stSelectbox select {
         background-color: #ffffff !important;
         color: #0f172a !important;
         border: 1px solid #cbd5e1 !important;
         border-radius: 6px !important;
     }
     
-    .titulo-principal {{
+    .titulo-principal {
         font-size: 38px !important;
         font-weight: bold !important;
         color: #9a3412 !important;
@@ -70,20 +43,20 @@ st.markdown(f"""
         margin-top: 10px;
         text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
     }
-    .sub-titulo {{
+    .sub-titulo {
         font-size: 18px !important;
         color: #7c2d12 !important;
         text-align: center;
         margin-bottom: 20px;
         font-weight: 500;
     }
-    div.stButton > button:first-child {{
+    div.stButton > button:first-child {
         background-color: #c2410c !important;
         color: white !important;
         font-weight: bold;
         border-radius: 8px;
     }
-    .bloco-admin {{
+    .bloco-admin {
         background-color: rgba(255, 255, 255, 0.95);
         padding: 20px;
         border-radius: 12px;
@@ -91,7 +64,7 @@ st.markdown(f"""
         margin-bottom: 20px;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
-    .bloco-versiculo {{
+    .bloco-versiculo {
         background: linear-gradient(135deg, #9a3412 0%, #c2410c 100%);
         color: white !important;
         padding: 20px;
@@ -99,10 +72,10 @@ st.markdown(f"""
         margin-bottom: 20px;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-    .bloco-versiculo *, .bloco-versiculo p, .bloco-versiculo h3 {{
+    .bloco-versiculo *, .bloco-versiculo p, .bloco-versiculo h3 {
         color: white !important;
     }
-    .alerta-item {{
+    .alerta-item {
         background-color: rgba(255, 255, 255, 0.95);
         padding: 12px 16px;
         border-radius: 8px;
@@ -111,7 +84,7 @@ st.markdown(f"""
         box-shadow: 0 2px 4px rgba(0,0,0,0.03);
     }
     </style>
-    """, unsafe_allow_html=True)
+""", unsafe_allow_html=True)
 
 # --- BANCO DE DADOS PERMANENTES (JSON) ---
 ARQUIVO_CONFIG = "dados_config.json"
@@ -506,10 +479,10 @@ with aba_danca:
                     "Observações": d_obs
                 }
                 st.session_state.danca.append(novo_registro_danca)
-                salvar_dados_sistema()
-                registrar_alerta(f"Novo registro adicionado no Ministério de Dança para {d_data.strftime('%d/%m/%Y')}.")
-                st.success("Registro de dança adicionado!")
-                st.rerun()
+            salvar_dados_sistema()
+            registrar_alerta(f"Novo registro adicionado no Ministério de Dança para {d_data.strftime('%d/%m/%Y')}.")
+            st.success("Registro de dança adicionado!")
+            st.rerun()
 
         if st.session_state.danca:
             st.markdown("---")
