@@ -416,10 +416,13 @@ if st.session_state.logado:
                 st.success("Configurações atualizadas com sucesso!")
                 st.rerun()
 
-# 1. ABA DE ESCALAS
+# 1. ABA DE ESCALAS (COM SELETOR DE HORÁRIO DE CULTO)
 with aba_escalas:
     sub_abas_locais = st.tabs([f"📍 {nome}" for nome in st.session_state.nomes_extensoes])
     nomes_disponiveis_cadastrados = [p["Nome"] for p in st.session_state.participantes] if st.session_state.participantes else ["João Silva", "Maria Oliveira"]
+    
+    # Opções padrão de horários de culto para alternar
+    opcoes_horarios_culto = ["09:00 (Manhã)", "18:00 (Noite)", "19:00 (Noite)", "Outro Horário"]
 
     for i, nome_da_extensao in enumerate(st.session_state.nomes_extensoes):
         with sub_abas_locais[i]:
@@ -430,36 +433,56 @@ with aba_escalas:
 
             lista_atual = st.session_state.escalas[nome_da_extensao]
 
-            if lista_atual:
-                df_escala = pd.DataFrame(lista_atual)
+            # Filtro opcional de horário para visualizar/alternar na tabela da extensão
+            st.markdown("🕒 **Filtrar escala por horário do culto:**")
+            filtro_horario_visualizacao = st.selectbox(
+                "Selecione o horário para filtrar visualização", 
+                ["Todos os Horários"] + opcoes_horarios_culto, 
+                key=f"filtro_horario_vis_{i}"
+            )
+
+            # Filtragem do DataFrame conforme o horário escolhido
+            lista_para_exibir = lista_atual
+            if filtro_horario_visualizacao != "Todos os Horários":
+                # Verifica se a chave 'Horário' existe nos registros antigos para compatibilidade
+                lista_para_exibir = [
+                    item for item in lista_atual 
+                    if item.get("Horário", "18:00 (Noite)") == filtro_horario_visualizacao
+                ]
+
+            if lista_para_exibir:
+                df_escala = pd.DataFrame(lista_para_exibir)
                 st.dataframe(df_escala, use_container_width=True)
             else:
-                st.info("Nenhuma escala cadastrada para esta extensão no momento.")
+                st.info(f"Nenhuma escala cadastrada para {filtro_horario_visualizacao if filtro_horario_visualizacao != 'Todos os Horários' else 'esta extensão'} no momento.")
 
             if st.session_state.logado:
                 st.markdown("---")
                 st.markdown(f"🛠️ **Gerenciar Escala: {nome_da_extensao}**")
                 
                 with st.form(key=f"form_escala_{i}"):
-                    c_data, c_vocal, c_musicos = st.columns(3)
+                    c_data, c_horario, c_vocal, c_musicos = st.columns(4)
                     with c_data:
                         inp_data = st.date_input("Data do Culto", key=f"data_{i}")
+                    with c_horario:
+                        inp_horario = st.selectbox("Horário do Culto", opcoes_horarios_culto, key=f"horario_{i}")
                     with c_vocal:
-                        inp_vocal = st.selectbox("Selecione o Vocal / Líder", [""] + nomes_disponiveis_cadastrados, key=f"vocal_{i}")
+                        inp_vocal = st.selectbox("Vocal / Líder", [""] + nomes_disponiveis_cadastrados, key=f"vocal_{i}")
                     with c_musicos:
-                        inp_musicos = st.selectbox("Selecione o Músico", [""] + nomes_disponiveis_cadastrados, key=f"musicos_{i}")
+                        inp_musicos = st.selectbox("Músico", [""] + nomes_disponiveis_cadastrados, key=f"musicos_{i}")
 
                     btn_adicionar = st.form_submit_button("➕ Adicionar Nova Escala")
                     if btn_adicionar:
                         nova_entrada = {
                             "ID": len(lista_atual) + 1,
                             "Data": inp_data.strftime("%d/%m/%Y"),
+                            "Horário": inp_horario,
                             "Vocal": inp_vocal,
                             "Músicos": inp_musicos
                         }
                         lista_atual.append(nova_entrada)
                         salvar_dados_sistema()
-                        registrar_alerta(f"Nova escala adicionada na {nome_da_extensao} para o dia {inp_data.strftime('%d/%m/%Y')}.")
+                        registrar_alerta(f"Nova escala adicionada na {nome_da_extensao} para o dia {inp_data.strftime('%d/%m/%Y')} às {inp_horario}.")
                         st.success("Escala adicionada com sucesso!")
                         st.rerun()
 
@@ -499,14 +522,12 @@ with aba_musicos:
             "Outro": ["Saxofone", "Flauta", "Trompete", "Clarinete", "Vocal / Backing Vocal"]
         }
 
-        # Para permitir a seleção dinâmica do instrumento antes de submeter o formulário no Streamlit:
         c_m1, c_m2 = st.columns(2)
         with c_m1:
             nome_musico_sel = st.selectbox("Nome do Músico", [""] + nomes_participantes_musicos, key="cad_musico_nome")
         with c_m2:
             categoria_sel = st.selectbox("Categoria", lista_categorias_exatas, key="cad_musico_cat")
 
-        # Seleção dinâmica dos instrumentos com base na categoria escolhida acima
         instrumentos_disponiveis = mapa_instrumentos_igreja.get(categoria_sel, ["Outro"])
         instrumento_principal_sel = st.selectbox("Instrumento Principal", instrumentos_disponiveis, key="cad_musico_inst")
 
