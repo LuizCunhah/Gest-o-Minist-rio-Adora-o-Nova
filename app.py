@@ -12,7 +12,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- CONVERSÃO DA FOTO DE FUNDO (CAMPO VERDE NO ENTARDECER DE VERÃO) ---
+# --- CONVERSÃO DA FOTO DE FUNDO ---
 CAMINHO_FUNDO_FOTO = "matt-richmond-8fhGzN5ktJo-unsplash_2.jpg"
 
 if os.path.exists(CAMINHO_FUNDO_FOTO):
@@ -96,7 +96,6 @@ css_fundo = f"""
         margin-bottom: 10px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }}
-    /* Botão de Refresh Flutuante no canto inferior esquerdo */
     .botao-refresh-container {{
         position: fixed;
         bottom: 20px;
@@ -124,13 +123,13 @@ def carregar_dados_sistema():
             st.session_state.titulo_app = cfg.get("titulo", "Adoração Nova Niterói")
             st.session_state.sub_titulo_app = cfg.get("subtitulo", "Sistema Integrado de Gestão de Louvor, Artes e Escalas")
             st.session_state.nomes_extensoes = cfg.get("extensoes", ["Sede Piratininga", "Extensão São Gonçalo", "Extensão Maricá"])
-            st.session_state.banner_path = cfg.get("banner", "")
+            st.session_state.banner_path = cfg.get("banner", "NOVA-NITEROI-Rj_2.jpg")
     else:
         st.session_state.usuarios_adm = {}
         st.session_state.titulo_app = "Adoração Nova Niterói"
         st.session_state.sub_titulo_app = "Sistema Integrado de Gestão de Louvor, Artes e Escalas"
         st.session_state.nomes_extensoes = ["Sede Piratininga", "Extensão São Gonçalo", "Extensão Maricá"]
-        st.session_state.banner_path = ""
+        st.session_state.banner_path = "NOVA-NITEROI-Rj_2.jpg"
 
     if os.path.exists(ARQUIVO_ESCALAS):
         with open(ARQUIVO_ESCALAS, "r", encoding="utf-8") as f:
@@ -157,8 +156,8 @@ def carregar_dados_sistema():
             st.session_state.musicos = json.load(f)
     else:
         st.session_state.musicos = [
-            {"ID": 1, "Nome": "João Silva", "Instrumento": "Guitarra Base/Solo", "Categoria": "Cordas"},
-            {"ID": 2, "Nome": "Maria Oliveira", "Instrumento": "Teclado / Piano", "Categoria": "Teclas"}
+            {"ID": 1, "Nome": "João Silva", "Instrumento": "Guitarra", "Categoria": "Cordas"},
+            {"ID": 2, "Nome": "Maria Oliveira", "Instrumento": "Teclado", "Categoria": "Teclas"}
         ]
 
     if os.path.exists(ARQUIVO_PARTICIPANTES):
@@ -237,9 +236,14 @@ if not st.session_state.usuarios_adm:
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
-# --- EXIBIÇÃO DO TÍTULO NO TOPO ---
+# --- EXIBIÇÃO DO TÍTULO E BANNER NA PARTE SUPERIOR ---
 st.markdown(f"<div class='titulo-principal'>{st.session_state.titulo_app}</div>", unsafe_allow_html=True)
 st.markdown(f"<div class='sub-titulo'>{st.session_state.sub_titulo_app}</div>", unsafe_allow_html=True)
+
+# Exibição do Banner na parte superior
+caminho_banner = "NOVA-NITEROI-Rj_2.jpg"
+if os.path.exists(caminho_banner):
+    st.image(caminho_banner, use_container_width=True)
 
 # --- SISTEMA DE LOGIN PÚBLICO / ADM ---
 st.markdown("<div class='bloco-admin'>", unsafe_allow_html=True)
@@ -473,7 +477,7 @@ with aba_escalas:
                         st.success("Registro excluído com sucesso!")
                         st.rerun()
 
-# 2. ABA DE MÚSICOS (COM OS MENUS SUSPENSOS AUTOMATIZADOS)
+# 2. ABA DE MÚSICOS (COM AS CATEGORIAS PEDIDAS E INSTRUMENTOS ATUAIS DE IGREJA)
 with aba_musicos:
     st.subheader("🎸 Equipe de Músicos & Instrumentos")
     if st.session_state.musicos:
@@ -488,15 +492,15 @@ with aba_musicos:
         
         nomes_participantes_musicos = [p["Nome"] for p in st.session_state.participantes] if st.session_state.participantes else ["João Silva", "Maria Oliveira"]
 
-        # Mapeamento completo e detalhado de categorias e instrumentos solicitado
-        mapa_instrumentos_completo = {
-            "Teclado": ["Teclado", "Synthesizer", "Workstation"],
-            "Piano": ["Piano Acústico", "Piano Digital"],
-            "Órgão": ["Órgão Eletrônico", "Órgão de Tubos"],
-            "Bateria": ["Bateria Acústica", "Bateria Eletrônica"],
-            "Percussão": ["Cajón", "Bongô", "Pandeiro", "Congas", "Timbales", "Percussão Geral"],
-            "Cordas": ["Violão", "Guitarra", "Contrabaixo", "Violino", "Viola", "Ukulele", "Cello"],
-            "Vocal / Geral": ["Ministro de Louvor", "Backing Vocal", "Vocal"]
+        # Categorias solicitadas rigorosamente: Cordas, Teclas, Percussão, Outro
+        categorias_menu = ["Cordas", "Teclas", "Percussão", "Outro"]
+
+        # Mapeamento dinâmico de instrumentos principais usados nas igrejas atualmente
+        mapa_instrumentos_igreja = {
+            "Cordas": ["Violão", "Guitarra", "Contrabaixo", "Baixo Acústico", "Violino", "Viola", "Ukulele", "Cello"],
+            "Teclas": ["Teclado", "Piano", "Órgão", "Synthesizer / Sintetizador"],
+            "Percussão": ["Bateria", "Percussão", "Cajón", "Pandeiro", "Bongô", "Congas", "Timbales"],
+            "Outro": ["Saxofone", "Flauta", "Trompete", "Clarinete", "Vocal / Ministro de Louvor", "Backing Vocal", "Outro Instrumento"]
         }
 
         with st.form("form_novo_musico"):
@@ -506,11 +510,11 @@ with aba_musicos:
                 nome_musico = st.selectbox("Nome do Músico", [""] + nomes_participantes_musicos)
             
             with col_m2:
-                categoria_selecionada = st.selectbox("Categoria", list(mapa_instrumentos_completo.keys()))
+                categoria_selecionada = st.selectbox("Categoria", categorias_menu)
             
             with col_m3:
-                # Automação instantânea: atualiza os instrumentos com base na categoria selecionada no menu anterior
-                instrumentos_disponiveis = mapa_instrumentos_completo.get(categoria_selecionada, ["Outro"])
+                # Instrumento Principal dinâmico baseado na categoria selecionada
+                instrumentos_disponiveis = mapa_instrumentos_igreja.get(categoria_selecionada, ["Outro"])
                 instrumento_principal = st.selectbox("Instrumento Principal", instrumentos_disponiveis)
 
             if st.form_submit_button("➕ Cadastrar Músico"):
@@ -540,7 +544,7 @@ with aba_musicos:
 
             with st.form("form_editar_excluir_musico"):
                 ed_nome = st.text_input("Nome do Músico", value=musico_selecionado["Nome"])
-                ed_cat = st.selectbox("Categoria", list(mapa_instrumentos_completo.keys()), index=list(mapa_instrumentos_completo.keys()).index(musico_selecionado["Categoria"]) if musico_selecionado["Categoria"] in mapa_instrumentos_completo else 0)
+                ed_cat = st.selectbox("Categoria", categorias_menu, index=categorias_menu.index(musico_selecionado["Categoria"]) if musico_selecionado["Categoria"] in categorias_menu else 0)
                 ed_inst = st.text_input("Instrumento Principal", value=musico_selecionado["Instrumento"])
 
                 col_b1, col_b2 = st.columns(2)
@@ -643,7 +647,6 @@ with aba_danca:
 with aba_devocional:
     st.subheader("📖 Devocional, Versículo & Bíblia Online")
     
-    # Bloco do versículo automático por horário (BKJ 1611)
     lista_versiculos_bkj1611 = [
         {
             "texto": "Ó Deus, tu és o meu Deus; de madrugada te busco; a minha alma tem sede de ti; a minha carne te deseja em uma terra seca e cansada, onde não há água.",
@@ -675,7 +678,6 @@ with aba_devocional:
     st.markdown("### 🌐 Seletor de Traduções da Bíblia (Sincronizado)")
     st.info("💡 Este menu de traduções fica aberto e acessível a todos os usuários para escolher a versão desejada da Bíblia.")
 
-    # Menu suspenso de traduções idêntico ao solicitado e sincronizado com o site bíblico
     col_t, col_b = st.columns([3, 1])
     with col_t:
         traducao_biblia_escolhida = st.selectbox(
@@ -697,7 +699,6 @@ with aba_devocional:
         if st.button("🔄 Atualizar Versículo"):
             st.rerun()
 
-    # Mapeamento das siglas correspondentes ao site oficial da Bíblia Online
     sigla_map_site = {
         "Almeida Corrigida Fiel (ACF)": "acf",
         "Nova Versão Internacional (NVI)": "nvi",
@@ -708,8 +709,6 @@ with aba_devocional:
         "King James Atualizada (KJA)": "kja"
     }
     sigla_escolhida = sigla_map_site.get(traducao_biblia_escolhida, "acf")
-
-    # Link sincronizado direto para a Bíblia Online com a tradução selecionada
     link_biblia_online = f"https://www.bibliaonline.com.br/{sigla_escolhida}/sl/119/105"
 
     st.markdown(f"""
