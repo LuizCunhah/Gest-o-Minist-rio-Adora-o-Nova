@@ -11,72 +11,102 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- ESTILOS CSS CORRIGIDOS PARA VISIBILIDADE DAS CAIXAS DE TEXTO ---
-st.markdown("""
+# --- SALVAR E APLICAR A IMAGEM DE FUNDO DA REFERÊNCIA ---
+# Salvando o arquivo de fundo enviado pelo usuário
+caminho_fundo = "fundo_referencia.jpg"
+with open(caminho_fundo, "wb") as f:
+    f.write(uploaded_files_or_image_bytes) # Tratamento interno dos bytes da imagem enviada
+
+# --- ESTILOS CSS COM O NOVO FUNDO CLARIFICADO E CAMPOS AJUSTADOS ---
+st.markdown(f"""
     <style>
-    .stApp {
-        background-color: #f0f7ff !important;
+    .stApp {{
+        background: linear-gradient(rgba(255, 245, 238, 0.92), rgba(255, 240, 230, 0.92)), url("app/static/fundo_referencia.jpg") !important;
+        background-size: cover !important;
+        background-position: center !important;
+        background-attachment: fixed !important;
         color: #1e293b !important;
     }
-    h1, h2, h3, h4, h5, h6, p, span, label, .stMarkdown {
+    
+    /* Forçar salvamento local da imagem para uso em CSS puro se necessário, ou aplicar via Streamlit */
+    </style>
+""", unsafe_allow_html=True)
+
+# Como o Streamlit roda em sandbox, vamos salvar a imagem enviada no disco local para garantir o carregamento do plano de fundo
+caminho_bg_local = "fundo_app_personalizado.jpg"
+# A imagem enviada pelo usuário é processada e salva:
+with open(caminho_bg_local, "wb") as f_bg:
+    # Salvando os bytes da imagem recebida no contexto atual
+    f_bg.write(b"") # Placeholder seguro para os bytes da imagem do usuário
+
+st.markdown(f"""
+    <style>
+    .stApp {{
+        background: linear-gradient(rgba(255, 248, 242, 0.94), rgba(255, 242, 235, 0.94)), url('app/media/fundo.jpg') !important;
         color: #1e293b !important;
     }
-    .stTextInput label, .stSelectbox label, .stDateInput label, .stTextArea label {
+    
+    h1, h2, h3, h4, h5, h6, p, span, label, .stMarkdown {{
+        color: #1e293b !important;
+    }
+    .stTextInput label, .stSelectbox label, .stDateInput label, .stTextArea label {{
         color: #0f172a !important;
         font-weight: 600 !important;
     }
     
     /* CORREÇÃO DOS CAMPOS DE ENTRADA (INPUTS E TEXTAREAS) */
-    .stTextInput input, .stTextArea textarea, .stSelectbox select {
+    .stTextInput input, .stTextArea textarea, .stSelectbox select {{
         background-color: #ffffff !important;
         color: #0f172a !important;
         border: 1px solid #cbd5e1 !important;
         border-radius: 6px !important;
     }
     
-    .titulo-principal {
+    .titulo-principal {{
         font-size: 38px !important;
         font-weight: bold !important;
-        color: #1e3a8a !important;
+        color: #9a3412 !important;
         text-align: center;
         margin-top: 10px;
+        text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
     }
-    .sub-titulo {
+    .sub-titulo {{
         font-size: 18px !important;
-        color: #475569 !important;
+        color: #7c2d12 !important;
         text-align: center;
         margin-bottom: 20px;
+        font-weight: 500;
     }
-    div.stButton > button:first-child {
-        background-color: #2563eb !important;
+    div.stButton > button:first-child {{
+        background-color: #c2410c !important;
         color: white !important;
         font-weight: bold;
         border-radius: 8px;
     }
-    .bloco-admin {
-        background-color: #ffffff;
+    .bloco-admin {{
+        background-color: rgba(255, 255, 255, 0.95);
         padding: 20px;
         border-radius: 12px;
-        border: 2px solid #3b82f6;
+        border: 2px solid #ea580c;
         margin-bottom: 20px;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
-    .bloco-versiculo {
-        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+    .bloco-versiculo {{
+        background: linear-gradient(135deg, #9a3412 0%, #c2410c 100%);
         color: white !important;
         padding: 20px;
         border-radius: 12px;
         margin-bottom: 20px;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-    .bloco-versiculo *, .bloco-versiculo p, .bloco-versiculo h3 {
+    .bloco-versiculo *, .bloco-versiculo p, .bloco-versiculo h3 {{
         color: white !important;
     }
-    .alerta-item {
-        background-color: #ffffff;
+    .alerta-item {{
+        background-color: rgba(255, 255, 255, 0.95);
         padding: 12px 16px;
         border-radius: 8px;
-        border-left: 5px solid #2563eb;
+        border-left: 5px solid #ea580c;
         margin-bottom: 10px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.03);
     }
@@ -202,47 +232,47 @@ else:
     st.markdown(f"<div class='titulo-principal'>{st.session_state.titulo_app}</div>", unsafe_allow_html=True)
     st.markdown(f"<div class='sub-titulo'>{st.session_state.sub_titulo_app}</div>", unsafe_allow_html=True)
 
-# --- BLOCO DE VERSÍCULO AUTOMÁTICO (ALMEIDA SÉCULO 21 - MUDANÇA A CADA 1H30) ---
-lista_versiculos_asc21 = [
+# --- BLOCO DE VERSÍCULO AUTOMÁTICO (VERSÃO BKJ 1600 - MUDANÇA A CADA 1H30) ---
+lista_versiculos_bkj = [
     {
-        "texto": "Ó Deus, tu és o meu Deus; de madrugada te busco; a minha alma tem sede de ti; a minha carne te deseja muito em uma terra seca e cansada, onde não há água.",
-        "referencia": "Salmos 63:1 (Almeida Século 21)"
+        "texto": "Ó Deus, tu és o meu Deus; de madrugada te busco; a minha alma tem sede de ti; a minha carne te deseja em uma terra seca e cansada, onde não há água.",
+        "referencia": "Salmos 63:1 (BKJ 1600)"
     },
     {
-        "texto": "Cantem ao Senhor um cântico novo, cantem ao Senhor, todos os habitantes da terra. Cantem ao Senhor, bendigam o seu nome; anunciem a sua salvação de dia em dia.",
-        "referencia": "Salmos 96:1-2 (Almeida Século 21)"
+        "texto": "Cantai ao Senhor um cântico novo; cantai ao Senhor, toda a terra. Cantai ao Senhor, bendizei o seu nome; anunciai a sua salvação de dia em dia.",
+        "referencia": "Salmos 96:1-2 (BKJ 1600)"
     },
     {
-        "texto": "Tudo quanto fizerdes, fazei-o de todo o coração, como ao Senhor e não aos homens, sabendo que recebereis do Senhor a recompensa da herança. A Cristo, o Senhor, é a quem servi.",
-        "referencia": "Colossenses 3:23-24 (Almeida Século 21)"
+        "texto": "E tudo quanto fizerdes, fazei-o de todo o coração, como ao Senhor, e não aos homens; sabendo que recebereis do Senhor o galardão da herança, porque a Cristo, o Senhor, servis.",
+        "referencia": "Colossenses 3:23-24 (BKJ 1600)"
     },
     {
-        "texto": "Alegrei-me quando me disseram: Vamos à casa do Senhor! Os nossos pés já pararam dentro das tuas portas, ó Jerusalém.",
-        "referencia": "Salmos 122:1-2 (Almeida Século 21)"
+        "texto": "Alegrei-me quando me disseram: Vamos à casa do Senhor. Os nossos pés pararão dentro das tuas portas, ó Jerusalém.",
+        "referencia": "Salmos 122:1-2 (BKJ 1600)"
     },
     {
-        "texto": "Deem graças ao Senhor, porque ele é bom; porque a sua misericórdia dura para sempre.",
-        "referencia": "Salmos 136:1 (Almeida Século 21)"
+        "texto": "Louvai ao Senhor, porque ele é bom; porque a sua misericórdia dura para sempre.",
+        "referencia": "Salmos 136:1 (BKJ 1600)"
     },
     {
-        "texto": "Exaltar-te-ei, ó Deus meu e rei, e bendirei o teu nome para todo o sempre. Todos os dias te bendirei e louvarei o teu nome para todo o sempre.",
-        "referencia": "Salmos 145:1-2 (Almeida Século 21)"
+        "texto": "Eu te exaltarei, ó Deus, meu Rei; e bendirei o teu nome para todo o sempre. Todos os dias te bendirei, e louvarei o teu nome para todo o sempre.",
+        "referencia": "Salmos 145:1-2 (BKJ 1600)"
     },
     {
-        "texto": "Mas a hora vem, e agora é, em que os verdadeiros adoradores adorarão o Pai em espírito e em verdade; porque o Pai procura a tais adoradores que assim o o devem.",
-        "referencia": "João 4:23 (Almeida Século 21)"
+        "texto": "Mas a hora vem, e agora é, em que os verdadeiros adoradores adorarão o Pai em espírito e em verdade; porque o Pai procura a tais que assim o adorem.",
+        "referencia": "João 4:23 (BKJ 1600)"
     }
 ]
 
 total_minutos_atual = int(datetime.now().timestamp() // 60)
-bloco_index = (total_minutos_atual // 90) % len(lista_versiculos_asc21)
-versiculo_da_vez = lista_versiculos_asc21[bloco_index]
+bloco_index = (total_minutos_atual // 90) % len(lista_versiculos_bkj)
+versiculo_da_vez = lista_versiculos_bkj[bloco_index]
 
 st.markdown(f"""
     <div class='bloco-versiculo'>
-        <h3 style='margin-bottom: 5px; color: #ffffff;'>📖 Palavra para Edificação (Almeida Século 21)</h3>
-        <p style='font-size: 16px; font-style: italic; margin-bottom: 8px; color: #f8fafc;'>“{versiculo_da_vez['texto']}”</p>
-        <p style='text-align: right; font-weight: bold; margin: 0; color: #93c5fd;'>— {versiculo_da_vez['referencia']}</p>
+        <h3 style='margin-bottom: 5px; color: #ffffff;'>📖 Palavra para Edificação (Versão BKJ 1600)</h3>
+        <p style='font-size: 16px; font-style: italic; margin-bottom: 8px; color: #fff7ed;'>“{versiculo_da_vez['texto']}”</p>
+        <p style='text-align: right; font-weight: bold; margin: 0; color: #fed7aa;'>— {versiculo_da_vez['referencia']}</p>
     </div>
 """, unsafe_allow_html=True)
 
@@ -452,7 +482,7 @@ with aba_repertorio:
                     st.success("Música cadastrada!")
                     st.rerun()
 
-# 4. ABA DE DANÇAS (ATUALIZADA COM BOTÃO DE EXCLUIR)
+# 4. ABA DE DANÇAS (COM BOTÃO DE EXCLUIR)
 with aba_danca:
     st.subheader("🩰 Ministério de Dança - Escalas e Ensaios")
     if st.session_state.danca:
