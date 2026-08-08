@@ -1,9 +1,8 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 import os
-import base64
 
 # Configuração da Página Web
 st.set_page_config(
@@ -19,18 +18,13 @@ st.markdown("""
         background-color: #f0f7ff !important;
         color: #1e293b !important;
     }
-    
-    /* Força cor escura em todos os textos, labels e cabeçalhos comuns */
     h1, h2, h3, h4, h5, h6, p, span, label, .stMarkdown {
         color: #1e293b !important;
     }
-
-    /* Força visibilidade absoluta nos rótulos de input do Streamlit */
     .stTextInput label, .stSelectbox label, .stDateInput label, .stTextArea label {
         color: #0f172a !important;
         font-weight: 600 !important;
     }
-
     .titulo-principal {
         font-size: 38px !important;
         font-weight: bold !important;
@@ -57,6 +51,25 @@ st.markdown("""
         border: 2px solid #3b82f6;
         margin-bottom: 20px;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+    .bloco-versiculo {
+        background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+        color: white !important;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .bloco-versiculo *, .bloco-versiculo p, .bloco-versiculo h3 {
+        color: white !important;
+    }
+    .alerta-item {
+        background-color: #ffffff;
+        padding: 12px 16px;
+        border-radius: 8px;
+        border-left: 5px solid #2563eb;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
     }
     </style>
     """, unsafe_allow_html=True)
@@ -111,10 +124,7 @@ def carregar_dados_sistema():
     else:
         st.session_state.musicos = [
             {"ID": 1, "Nome": "João Silva", "Instrumento": "Guitarra Base/Solo", "Categoria": "Cordas"},
-            {"ID": 2, "Nome": "Maria Oliveira", "Instrumento": "Teclado / Piano", "Categoria": "Teclas"},
-            {"ID": 3, "Nome": "Carlos Santos", "Instrumento": "Violão", "Categoria": "Cordas"},
-            {"ID": 4, "Nome": "Ana Costa", "Instrumento": "Contrabaixo Elétrico", "Categoria": "Cordas"},
-            {"ID": 5, "Nome": "Lucas Pereira", "Instrumento": "Bateria", "Categoria": "Percussão / Bateria"}
+            {"ID": 2, "Nome": "Maria Oliveira", "Instrumento": "Teclado / Piano", "Categoria": "Teclas"}
         ]
 
     if os.path.exists(ARQUIVO_LOGS):
@@ -152,7 +162,7 @@ if 'usuario_atual' not in st.session_state:
 
 def registrar_alerta(txt):
     horario = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-    st.session_state.logs_notificacoes.insert(0, f"[{horario}] {txt}")
+    st.session_state.logs_notificacoes.insert(0, {"data": horario, "mensagem": txt})
     salvar_dados_sistema()
 
 # --- TELA DE PRIMEIRO ACESSO (CADASTRO DA SENHA DO ADMINISTRADOR) ---
@@ -182,6 +192,50 @@ if st.session_state.banner_path and os.path.exists(st.session_state.banner_path)
 else:
     st.markdown(f"<div class='titulo-principal'>{st.session_state.titulo_app}</div>", unsafe_allow_html=True)
     st.markdown(f"<div class='sub-titulo'>{st.session_state.sub_titulo_app}</div>", unsafe_allow_html=True)
+
+# --- BLOCO DE VERSÍCULO AUTOMÁTICO (ALMEIDA SÉCULO 21 - MUDANÇA A CADA 1H30) ---
+lista_versiculos_asc21 = [
+    {
+        "texto": "Ó Deus, tu és o meu Deus; de madrugada te busco; a minha alma tem sede de ti; a minha carne te deseja muito em uma terra seca e cansada, onde não há água.",
+        "referencia": "Salmos 63:1 (Almeida Século 21)"
+    },
+    {
+        "texto": "Cantem ao Senhor um cântico novo, cantem ao Senhor, todos os habitantes da terra. Cantem ao Senhor, bendigam o seu nome; anunciem a sua salvação de dia em dia.",
+        "referencia": "Salmos 96:1-2 (Almeida Século 21)"
+    },
+    {
+        "texto": "Tudo quanto fizerdes, fazei-o de todo o coração, como ao Senhor e não aos homens, sabendo que recebereis do Senhor a recompensa da herança. A Cristo, o Senhor, é a quem servi.",
+        "referencia": "Colossenses 3:23-24 (Almeida Século 21)"
+    },
+    {
+        "texto": "Alegrei-me quando me disseram: Vamos à casa do Senhor! Os nossos pés já pararam dentro das tuas portas, ó Jerusalém.",
+        "referencia": "Salmos 122:1-2 (Almeida Século 21)"
+    },
+    {
+        "texto": "Deem graças ao Senhor, porque ele é bom; porque a sua misericórdia dura para sempre.",
+        "referencia": "Salmos 136:1 (Almeida Século 21)"
+    },
+    {
+        "texto": "Exaltar-te-ei, ó Deus meu e rei, e bendirei o teu nome para todo o sempre. Todos os dias te bendirei e louvarei o teu nome para todo o sempre.",
+        "referencia": "Salmos 145:1-2 (Almeida Século 21)"
+    },
+    {
+        "texto": "Mas a hora vem, e agora é, em que os verdadeiros adoradores adorarão o Pai em espírito e em verdade; porque o Pai procura a tais adoradores que assim o o devem.",
+        "referencia": "João 4:23 (Almeida Século 21)"
+    }
+]
+
+total_minutos_atual = int(datetime.now().timestamp() // 60)
+bloco_index = (total_minutos_atual // 90) % len(lista_versiculos_asc21)
+versiculo_da_vez = lista_versiculos_asc21[bloco_index]
+
+st.markdown(f"""
+    <div class='bloco-versiculo'>
+        <h3 style='margin-bottom: 5px; color: #ffffff;'>📖 Palavra para Edificação (Almeida Século 21)</h3>
+        <p style='font-size: 16px; font-style: italic; margin-bottom: 8px; color: #f8fafc;'>“{versiculo_da_vez['texto']}”</p>
+        <p style='text-align: right; font-weight: bold; margin: 0; color: #93c5fd;'>— {versiculo_da_vez['referencia']}</p>
+    </div>
+""", unsafe_allow_html=True)
 
 # --- SISTEMA DE LOGIN PÚBLICO / ADM ---
 st.markdown("<div class='bloco-admin'>", unsafe_allow_html=True)
@@ -311,7 +365,7 @@ with aba_escalas:
                         }
                         lista_atual.append(nova_entrada)
                         salvar_dados_sistema()
-                        registrar_alerta(f"Escala adicionada em {nome_da_extensao}")
+                        registrar_alerta(f"Nova escala adicionada na {nome_da_extensao} para o dia {inp_data.strftime('%d/%m/%Y')}.")
                         st.success("Escala adicionada com sucesso!")
                         st.rerun()
 
@@ -321,7 +375,7 @@ with aba_escalas:
                     if st.button(f"🗑️ Excluir Linha Selecionada ({nome_da_extensao})", key=f"btn_del_{i}"):
                         st.session_state.escalas[nome_da_extensao] = [item for item in lista_atual if item["ID"] != id_para_excluir]
                         salvar_dados_sistema()
-                        registrar_alerta(f"Escala ID {id_para_excluir} removida de {nome_da_extensao}")
+                        registrar_alerta(f"Escala ID {id_para_excluir} foi removida da {nome_da_extensao}.")
                         st.success("Registro excluído com sucesso!")
                         st.rerun()
 
@@ -356,6 +410,7 @@ with aba_musicos:
                         "Categoria": categoria_inst
                     })
                     salvar_dados_sistema()
+                    registrar_alerta(f"Músico cadastrado/atualizado: {nome_musico}.")
                     st.success(f"Músico {nome_musico} adicionado com sucesso!")
                     st.rerun()
 
@@ -369,6 +424,7 @@ with aba_repertorio:
                 if st.button(f"🗑️ Excluir Música: {musica}", key=f"del_musica_{musica}"):
                     del st.session_state.repertorio[musica]
                     salvar_dados_sistema()
+                    registrar_alerta(f"Música excluída do repertório: {musica}.")
                     st.success("Música removida!")
                     st.rerun()
 
@@ -383,6 +439,7 @@ with aba_repertorio:
                 if m_nome and m_cifra:
                     st.session_state.repertorio[m_nome] = {"Artista": m_artista, "Cifra": m_cifra}
                     salvar_dados_sistema()
+                    registrar_alerta(f"Nova música adicionada ao repertório: {m_nome}.")
                     st.success("Música cadastrada!")
                     st.rerun()
 
@@ -410,11 +467,31 @@ with aba_danca:
                 }
                 st.session_state.danca.append(novo_registro_danca)
                 salvar_dados_sistema()
+                registrar_alerta(f"Novo registro adicionado no Ministério de Dança para {d_data.strftime('%d/%m/%Y')}.")
                 st.success("Registro de dança adicionado!")
                 st.rerun()
 
-# 5. ABA DE DEVOCIONAL E ALERTAS
+# 5. ABA DE DEVOCIONAL E ALERTAS (ATUALIZADA)
 with aba_devocional:
-    st.subheader("📖 Devocional & Avisos do Sistema")
-    for log in st.session_state.logs_notificacoes:
-        st.markdown(f"- {log}")
+    st.subheader("📖 Histórico de Modificações & Alertas")
+    st.info("💡 Sempre que abrir o link do aplicativo, esta aba exibirá o histórico completo e cronológico de todas as modificações feitas pela liderança, garantindo que você veja o que mudou desde o último acesso.")
+    
+    if st.session_state.logs_notificacoes:
+        st.markdown("---")
+        for log in st.session_state.logs_notificacoes:
+            # Compatibilidade com formatos antigos ou novos de log
+            if isinstance(log, dict):
+                data_log = log.get("data", "")
+                msg_log = log.get("mensagem", "")
+            else:
+                data_log = "Registro anterior"
+                msg_log = str(log)
+                
+            st.markdown(f"""
+                <div class='alerta-item'>
+                    <span style='font-size: 12px; color: #64748b; font-weight: bold;'>🕒 {data_log}</span><br>
+                    <span style='font-size: 15px; color: #1e293b;'>{msg_log}</span>
+                </div>
+            """, unsafe_allow_html=True)
+    else:
+        st.success("Nenhuma alteração registrada recentemente no sistema.")
