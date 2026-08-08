@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime
 import json
 import os
 import base64
@@ -237,12 +237,9 @@ if not st.session_state.usuarios_adm:
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
-# --- EXIBIÇÃO DO BANNER OU TÍTULO NO TOPO ---
-if st.session_state.banner_path and os.path.exists(st.session_state.banner_path):
-    st.image(st.session_state.banner_path, use_container_width=True)
-else:
-    st.markdown(f"<div class='titulo-principal'>{st.session_state.titulo_app}</div>", unsafe_allow_html=True)
-    st.markdown(f"<div class='sub-titulo'>{st.session_state.sub_titulo_app}</div>", unsafe_allow_html=True)
+# --- EXIBIÇÃO DO TÍTULO NO TOPO ---
+st.markdown(f"<div class='titulo-principal'>{st.session_state.titulo_app}</div>", unsafe_allow_html=True)
+st.markdown(f"<div class='sub-titulo'>{st.session_state.sub_titulo_app}</div>", unsafe_allow_html=True)
 
 # --- BLOCO DE VERSÍCULO AUTOMÁTICO (VERSÃO BKJ 1611) ---
 lista_versiculos_bkj1611 = [
@@ -311,7 +308,7 @@ if st.button("🔄 Atualizar Tela"):
     st.rerun()
 st.markdown("</div>", unsafe_allow_html=True)
 
-# --- NAVEGAÇÃO POR ABAS (A ABA DO ADMINISTRADOR AGORA É A PRIMEIRA E PRINCIPAL) ---
+# --- NAVEGAÇÃO POR ABAS ---
 if st.session_state.logado:
     aba_adm_principal, aba_escalas, aba_musicos, aba_repertorio, aba_danca, aba_devocional = st.tabs([
         "👑 Gestão Geral (Admin)", "📊 Escalas Sincronizadas", "🎸 Gestão de Músicos", "🎶 Repertório & Cifras", "🩰 Ministério de Dança", "📖 Devocional & Alertas"
@@ -321,14 +318,14 @@ else:
         "📊 Escalas Sincronizadas", "🎸 Gestão de Músicos", "🎶 Repertório & Cifras", "🩰 Ministério de Dança", "📖 Devocional & Alertas"
     ])
 
-# 0. ABA PRINCIPAL RESTRITA AO ADMINISTRADOR (GESTAO DE PARTICIPANTES E CONFIGURAÇÕES GLOBAIS)
+# 0. ABA PRINCIPAL RESTRITA AO ADMINISTRADOR
 if st.session_state.logado:
     with aba_adm_principal:
         st.subheader("👑 Área Restrita do Administrador — Gestão Geral do Aplicativo")
-        st.info("Gerencie aqui todos os participantes do ministério (com dados completos de contato, endereço, aniversário e sugestões) e configure as informações gerais de título, capa e extensões.")
+        st.info("Gerencie aqui todos os participantes do ministério e configure as informações gerais de título e extensões.")
 
         st.markdown("---")
-        st.markdown("### 📋 Cadastro de Novo Participante (Ministério / Músicos / Dança)")
+        st.markdown("### 📋 Cadastro de Novo Participante")
         with st.form("form_novo_participante_geral"):
             col_p1, col_p2 = st.columns(2)
             with col_p1:
@@ -350,11 +347,10 @@ if st.session_state.logado:
                     }
                     st.session_state.participantes.append(novo_registro)
                     
-                    # Sincroniza automaticamente com Músicos se for músico ou vocal
                     if p_funcao in ["Músico", "Vocal"]:
                         novo_id_m = max([m["ID"] for m in st.session_state.musicos], default=0) + 1
                         st.session_state.musicos.append({
-                            "ID": novo_id_m, "Nome": p_nome, "Instrumento": p_funcao, "Categoria": "Geral"
+                            "ID": novo_id_m, "Nome": p_nome, "Instrumento": "Violão", "Categoria": "Cordas"
                         })
 
                     salvar_dados_sistema()
@@ -413,7 +409,7 @@ if st.session_state.logado:
             st.dataframe(pd.DataFrame(st.session_state.participantes), use_container_width=True)
 
         st.markdown("---")
-        st.markdown("### ⚙️ Configurações Gerais do Aplicativo (Título, Capa e Extensões)")
+        st.markdown("### ⚙️ Configurações Gerais do Aplicativo")
         with st.form("form_config_geral_app"):
             col_t1, col_t2 = st.columns(2)
             with col_t1:
@@ -451,8 +447,6 @@ if st.session_state.logado:
 # 1. ABA DE ESCALAS
 with aba_escalas:
     sub_abas_locais = st.tabs([f"📍 {nome}" for nome in st.session_state.nomes_extensoes])
-
-    # Lista de nomes disponíveis para seleção rápida nos menus suspensos de vocais e músicos
     nomes_disponiveis_cadastrados = [p["Nome"] for p in st.session_state.participantes] if st.session_state.participantes else ["João Silva", "Maria Oliveira"]
 
     for i, nome_da_extensao in enumerate(st.session_state.nomes_extensoes):
@@ -479,10 +473,8 @@ with aba_escalas:
                     with c_data:
                         inp_data = st.date_input("Data do Culto", key=f"data_{i}")
                     with c_vocal:
-                        # Menu suspenso para selecionar vocais de forma fácil e rápida
                         inp_vocal = st.selectbox("Selecione o Vocal / Líder", [""] + nomes_disponiveis_cadastrados, key=f"vocal_{i}")
                     with c_musicos:
-                        # Menu suspenso para selecionar músicos de forma fácil e rápida
                         inp_musicos = st.selectbox("Selecione o Músico", [""] + nomes_disponiveis_cadastrados, key=f"musicos_{i}")
 
                     btn_adicionar = st.form_submit_button("➕ Adicionar Nova Escala")
@@ -509,7 +501,7 @@ with aba_escalas:
                         st.success("Registro excluído com sucesso!")
                         st.rerun()
 
-# 2. ABA DE MÚSICOS
+# 2. ABA DE MÚSICOS (COM OS MENUS SUSPENSOS SOLICITADOS)
 with aba_musicos:
     st.subheader("🎸 Equipe de Músicos & Instrumentos")
     if st.session_state.musicos:
@@ -521,14 +513,33 @@ with aba_musicos:
     if st.session_state.logado:
         st.markdown("---")
         st.markdown("### ➕ Cadastrar Novo Músico")
+        
+        # Mapeamento dinâmico dos nomes vindos dos participantes cadastrados pelo administrador
+        nomes_participantes_musicos = [p["Nome"] for p in st.session_state.participantes] if st.session_state.participantes else ["João Silva", "Maria Oliveira"]
+
+        # Mapeamento das categorias e seus respectivos instrumentos principais
+        categorias_instrumentos = {
+            "Cordas": ["Violão", "Guitarra", "Contrabaixo", "Violino", "Viola", "Ukulele", "Cello"],
+            "Teclas": ["Teclado", "Piano", "Órgão", "Sintetizador"],
+            "Percussão / Bateria": ["Bateria", "Cajon", "Bongô", "Pandeiro", "Congas", "Timbales"],
+            "Outros": ["Flauta", "Saxofone", "Trompete", "Clarinet", "Vocal"]
+        }
+
         with st.form("form_novo_musico"):
             col_m1, col_m2, col_m3 = st.columns(3)
+            
             with col_m1:
-                nome_musico = st.text_input("Nome do Músico")
+                # Menu suspenso refletindo os nomes cadastrados pelo administrador
+                nome_musico = st.selectbox("Nome do Músico", [""] + nomes_participantes_musicos)
+            
             with col_m2:
-                categoria_inst = st.selectbox("Categoria", ["Cordas", "Teclas", "Percussão / Bateria", "Outros"])
+                # Menu suspenso com as categorias predefinidas
+                categoria_inst = st.selectbox("Categoria", list(categorias_instrumentos.keys()))
+            
             with col_m3:
-                instrumento_especifico = st.text_input("Instrumento Principal")
+                # Menu suspenso inteligente cujo conteúdo muda conforme a categoria selecionada acima
+                instrumentos_da_categoria = categorias_instrumentos.get(categoria_inst, ["Outro"])
+                instrumento_especifico = st.selectbox("Instrumento Principal", instrumentos_da_categoria)
 
             if st.form_submit_button("➕ Cadastrar Músico"):
                 if nome_musico:
@@ -540,11 +551,11 @@ with aba_musicos:
                         "Categoria": categoria_inst
                     })
                     salvar_dados_sistema()
-                    registrar_alerta(f"Músico cadastrado: {nome_musico}.")
+                    registrar_alerta(f"Músico cadastrado: {nome_musico} ({instrumento_especifico}).")
                     st.success(f"Músico {nome_musico} adicionado com sucesso!")
                     st.rerun()
                 else:
-                    st.error("O nome do músico não pode estar vazio.")
+                    st.error("Por favor, selecione o nome do músico.")
 
         if st.session_state.musicos:
             st.markdown("---")
@@ -614,7 +625,7 @@ with aba_repertorio:
                     st.success("Música cadastrada!")
                     st.rerun()
 
-# 4. ABA DE DANÇAS (COM MENU SUSPENSO DE SELEÇÃO RÁPIDA)
+# 4. ABA DE DANÇAS
 with aba_danca:
     st.subheader("🩰 Ministério de Dança - Escalas e Ensaios")
     if st.session_state.danca:
@@ -627,12 +638,10 @@ with aba_danca:
         st.markdown("---")
         st.markdown("### 🛠️ Adicionar Registro de Dança")
         
-        # Nomes de participantes cadastrados para seleção rápida
         nomes_participantes_danca = [p["Nome"] for p in st.session_state.participantes] if st.session_state.participantes else ["Ana Souza", "Beatriz Lima"]
 
         with st.form("form_danca"):
             d_data = st.date_input("Data do Evento/Ensaio")
-            # Menu suspenso para selecionar os responsáveis de forma fácil e rápida
             d_responsaveis = st.selectbox("Selecione o Responsável / Coreógrafa", [""] + nomes_participantes_danca)
             d_obs = st.text_input("Observações / Coreografia")
             if st.form_submit_button("➕ Adicionar Registro de Dança"):
