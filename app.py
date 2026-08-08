@@ -20,8 +20,13 @@ if os.path.exists(CAMINHO_FUNDO_FOTO):
 else:
     img_base64 = ""
 
-# --- BANNER DA NOVA FOTO ENVIADA ---
+# --- CONVERSÃO DO BANNER PARA BASE64 (GARANTIA DE EXIBIÇÃO) ---
 CAMINHO_BANNER = "NOVA-NITEROI-Rj_4.jpg"
+if os.path.exists(CAMINHO_BANNER):
+    with open(CAMINHO_BANNER, "rb") as f:
+        banner_base64 = base64.b64encode(f.read()).decode("utf-8")
+else:
+    banner_base64 = ""
 
 # --- ESTILOS CSS ---
 css_fundo = f"""
@@ -234,14 +239,18 @@ if not st.session_state.usuarios_adm:
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
-# --- EXIBIÇÃO OBRIGATÓRIA DO BANNER NO TOPO ABSOLUTO DO APLICATIVO ---
-if os.path.exists(CAMINHO_BANNER):
-    st.image(CAMINHO_BANNER, use_container_width=True)
+# --- EXIBIÇÃO GARANTIDA DO BANNER NO TOPO ABSOLUTO ---
+if banner_base64:
+    st.markdown(
+        f"""
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img src="data:image/jpeg;base64,{banner_base64}" style="width: 100%; max-height: 350px; object-fit: cover; border-radius: 8px; border: 2px solid #22c55e;" />
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 else:
-    # Se porventura o arquivo exato ainda não estiver gravado no diretório de execução, busca criar/salvar do objeto temporário se houver, ou exibe aviso claro.
-    # Como o arquivo foi enviado nesta rodada como NOVA-NITEROI-Rj_4.jpg, garantimos o uso direto dele.
-    if os.path.exists("NOVA-NITEROI-Rj_4.jpg"):
-        st.image("NOVA-NITEROI-Rj_4.jpg", use_container_width=True)
+    st.warning("⚠️ Imagem do banner não encontrada na pasta. Certifique-se de que o arquivo 'NOVA-NITEROI-Rj_4.jpg' está na mesma pasta do script.")
 
 st.markdown(f"<div class='titulo-principal'>{st.session_state.titulo_app}</div>", unsafe_allow_html=True)
 st.markdown(f"<div class='sub-titulo'>{st.session_state.sub_titulo_app}</div>", unsafe_allow_html=True)
