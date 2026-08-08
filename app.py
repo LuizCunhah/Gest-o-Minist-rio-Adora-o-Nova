@@ -240,7 +240,11 @@ if not st.session_state.usuarios_adm:
     st.stop()
 
 # --- EXIBIÇÃO GARANTIDA DO BANNER NO TOPO ABSOLUTO ---
-if banner_base64:
+# --- EXIBIÇÃO DO BANNER NO TOPO ABSOLUTO ---
+CAMINHO_BANNER = "NOVA-NITEROI-Rj_4.jpg"
+if os.path.exists(CAMINHO_BANNER):
+    with open(CAMINHO_BANNER, "rb") as f:
+        banner_base64 = base64.b64encode(f.read()).decode("utf-8")
     st.markdown(
         f"""
         <div style="text-align: center; margin-bottom: 20px;">
@@ -250,10 +254,7 @@ if banner_base64:
         unsafe_allow_html=True
     )
 else:
-    st.warning("⚠️ Imagem do banner não encontrada na pasta. Certifique-se de que o arquivo 'NOVA-NITEROI-Rj_4.jpg' está na mesma pasta do script.")
-
-st.markdown(f"<div class='titulo-principal'>{st.session_state.titulo_app}</div>", unsafe_allow_html=True)
-st.markdown(f"<div class='sub-titulo'>{st.session_state.sub_titulo_app}</div>", unsafe_allow_html=True)
+    st.warning("⚠️ Imagem do banner não encontrada na pasta. Verifique se o nome exato é 'NOVA-NITEROI-Rj_4.jpg'.")
 
 # --- SISTEMA DE LOGIN PÚBLICO / ADM ---
 st.markdown("<div class='bloco-admin'>", unsafe_allow_html=True)
