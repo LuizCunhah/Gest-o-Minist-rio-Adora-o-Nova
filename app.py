@@ -11,7 +11,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- ESTILOS CSS PARA CORREÇÃO DE CONTRASTE E TEXTOS ---
+# --- ESTILOS CSS CORRIGIDOS PARA VISIBILIDADE DAS CAIXAS DE TEXTO ---
 st.markdown("""
     <style>
     .stApp {
@@ -25,6 +25,15 @@ st.markdown("""
         color: #0f172a !important;
         font-weight: 600 !important;
     }
+    
+    /* CORREÇÃO DOS CAMPOS DE ENTRADA (INPUTS E TEXTAREAS) */
+    .stTextInput input, .stTextArea textarea, .stSelectbox select {
+        background-color: #ffffff !important;
+        color: #0f172a !important;
+        border: 1px solid #cbd5e1 !important;
+        border-radius: 6px !important;
+    }
+    
     .titulo-principal {
         font-size: 38px !important;
         font-weight: bold !important;
@@ -471,7 +480,7 @@ with aba_danca:
                 st.success("Registro de dança adicionado!")
                 st.rerun()
 
-# 5. ABA DE DEVOCIONAL E ALERTAS (ATUALIZADA)
+# 5. ABA DE DEVOCIONAL E ALERTAS
 with aba_devocional:
     st.subheader("📖 Histórico de Modificações & Alertas")
     st.info("💡 Sempre que abrir o link do aplicativo, esta aba exibirá o histórico completo e cronológico de todas as modificações feitas pela liderança, garantindo que você veja o que mudou desde o último acesso.")
@@ -479,7 +488,6 @@ with aba_devocional:
     if st.session_state.logs_notificacoes:
         st.markdown("---")
         for log in st.session_state.logs_notificacoes:
-            # Compatibilidade com formatos antigos ou novos de log
             if isinstance(log, dict):
                 data_log = log.get("data", "")
                 msg_log = log.get("mensagem", "")
