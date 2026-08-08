@@ -19,39 +19,37 @@ def obter_base64_imagem(caminho_imagem):
             return base64.b64encode(f.read()).decode("utf-8")
     return ""
 
-# Salvando a imagem de fundo de referência enviada pelo usuário
 CAMINHO_FUNDO_FOTO = "fundo_folhas_orvalho.jpg"
-with open(CAMINHO_FUNDO_FOTO, "wb") as f_img:
-    f_img.write(b"") # Placeholder interno para persistência do ambiente
+if not os.path.exists(CAMINHO_FUNDO_FOTO):
+    with open(CAMINHO_FUNDO_FOTO, "wb") as f_img:
+        f_img.write(b"")
 
 img_base64 = obter_base64_imagem(CAMINHO_FUNDO_FOTO)
 
-# --- ESTILOS CSS DEFINITIVOS (FUNDO DISCRETO COM A FOTO, SEM REFLOW/PISCAR) ---
-st.markdown(f"""
-    <style>
+# --- ESTILOS CSS DEFINITIVOS (CORRIGIDO: DUPLICAÇÃO DE CHAVES PARA EVITAR ERRO DE F-STRING) ---
+css_fundo = f"""
     .stApp {{
         background: linear-gradient(rgba(240, 244, 240, 0.88), rgba(240, 244, 240, 0.88)), url("data:image/jpeg;base64,{img_base64}") !important;
         background-size: cover !important;
         background-position: center !important;
         background-attachment: fixed !important;
         color: #1e293b !important;
-    }
+    }}
     
     h1, h2, h3, h4, h5, h6, p, span, label, .stMarkdown {{
         color: #1e293b !important;
-    }
+    }}
     .stTextInput label, .stSelectbox label, .stDateInput label, .stTextArea label {{
         color: #14532d !important;
         font-weight: 600 !important;
-    }
+    }}
     
-    /* CORREÇÃO DOS CAMPOS DE ENTRADA */
     .stTextInput input, .stTextArea textarea, .stSelectbox select {{
         background-color: rgba(255, 255, 255, 0.95) !important;
         color: #0f172a !important;
         border: 1px solid #86efac !important;
         border-radius: 6px !important;
-    }
+    }}
     
     .titulo-principal {{
         font-size: 38px !important;
@@ -60,20 +58,20 @@ st.markdown(f"""
         text-align: center;
         margin-top: 10px;
         text-shadow: 1px 1px 2px rgba(255,255,255,0.9);
-    }
+    }}
     .sub-titulo {{
         font-size: 18px !important;
         color: #166534 !important;
         text-align: center;
         margin-bottom: 20px;
         font-weight: 500;
-    }
+    }}
     div.stButton > button:first-child {{
         background-color: #15803d !important;
         color: white !important;
         font-weight: bold;
         border-radius: 8px;
-    }
+    }}
     .bloco-admin {{
         background-color: rgba(255, 255, 255, 0.92);
         padding: 20px;
@@ -81,7 +79,7 @@ st.markdown(f"""
         border: 2px solid #22c55e;
         margin-bottom: 20px;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    }
+    }}
     .bloco-versiculo {{
         background: linear-gradient(135deg, #14532d 0%, #166534 100%);
         color: white !important;
@@ -89,10 +87,10 @@ st.markdown(f"""
         border-radius: 12px;
         margin-bottom: 20px;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
+    }}
     .bloco-versiculo *, .bloco-versiculo p, .bloco-versiculo h3 {{
         color: white !important;
-    }
+    }}
     .alerta-item {{
         background-color: rgba(255, 255, 255, 0.92);
         padding: 12px 16px;
@@ -100,9 +98,10 @@ st.markdown(f"""
         border-left: 5px solid #22c55e;
         margin-bottom: 10px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.03);
-    }
-    </style>
-""", unsafe_allow_html=True)
+    }}
+"""
+
+st.markdown(f"<style>{css_fundo}</style>", unsafe_allow_html=True)
 
 # --- BANCO DE DADOS PERMANENTES (JSON) ---
 ARQUIVO_CONFIG = "dados_config.json"
