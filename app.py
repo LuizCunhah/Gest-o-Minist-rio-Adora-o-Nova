@@ -20,8 +20,8 @@ if os.path.exists(CAMINHO_FUNDO_FOTO):
 else:
     img_base64 = ""
 
-# --- BANNER DA SEGUNDA FOTO ---
-CAMINHO_BANNER = "NOVA-NITEROI-Rj_2.jpg"
+# --- BANNER DA SEGUNDA FOTO (ATUALIZADO PARA O NOVO NOME DO ARQUIVO) ---
+CAMINHO_BANNER = "NOVA-NITEROI-Rj_3.jpg"
 
 # --- ESTILOS CSS ---
 css_fundo = f"""
@@ -234,12 +234,12 @@ if not st.session_state.usuarios_adm:
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
-# --- EXIBIÇÃO DO TÍTULO E BANNER NO TOPO ---
-st.markdown(f"<div class='titulo-principal'>{st.session_state.titulo_app}</div>", unsafe_allow_html=True)
-st.markdown(f"<div class='sub-titulo'>{st.session_state.sub_titulo_app}</div>", unsafe_allow_html=True)
-
+# --- EXIBIÇÃO DO BANNER E TÍTULO NO TOPO (GARANTINDO A RENDERIZAÇÃO DA IMAGEM) ---
 if os.path.exists(CAMINHO_BANNER):
     st.image(CAMINHO_BANNER, use_container_width=True)
+
+st.markdown(f"<div class='titulo-principal'>{st.session_state.titulo_app}</div>", unsafe_allow_html=True)
+st.markdown(f"<div class='sub-titulo'>{st.session_state.sub_titulo_app}</div>", unsafe_allow_html=True)
 
 # --- SISTEMA DE LOGIN PÚBLICO / ADM ---
 st.markdown("<div class='bloco-admin'>", unsafe_allow_html=True)
@@ -416,13 +416,10 @@ if st.session_state.logado:
                 st.success("Configurações atualizadas com sucesso!")
                 st.rerun()
 
-# 1. ABA DE ESCALAS (COM SELETOR DE HORÁRIO DE CULTO)
+# 1. ABA DE ESCALAS (COM CAMPO DE HORÁRIO LIVRE)
 with aba_escalas:
     sub_abas_locais = st.tabs([f"📍 {nome}" for nome in st.session_state.nomes_extensoes])
     nomes_disponiveis_cadastrados = [p["Nome"] for p in st.session_state.participantes] if st.session_state.participantes else ["João Silva", "Maria Oliveira"]
-    
-    # Opções padrão de horários de culto para alternar
-    opcoes_horarios_culto = ["09:00 (Manhã)", "18:00 (Noite)", "19:00 (Noite)", "Outro Horário"]
 
     for i, nome_da_extensao in enumerate(st.session_state.nomes_extensoes):
         with sub_abas_locais[i]:
@@ -433,21 +430,21 @@ with aba_escalas:
 
             lista_atual = st.session_state.escalas[nome_da_extensao]
 
-            # Filtro opcional de horário para visualizar/alternar na tabela da extensão
+            # Coleta horários já existentes para montar o filtro de visualização dinamicamente
+            horarios_cadastrados_existentes = sorted(list(set([item.get("Horário", "18:00") for item in lista_atual])))
+
             st.markdown("🕒 **Filtrar escala por horário do culto:**")
             filtro_horario_visualizacao = st.selectbox(
                 "Selecione o horário para filtrar visualização", 
-                ["Todos os Horários"] + opcoes_horarios_culto, 
+                ["Todos os Horários"] + horarios_cadastrados_existentes, 
                 key=f"filtro_horario_vis_{i}"
             )
 
-            # Filtragem do DataFrame conforme o horário escolhido
             lista_para_exibir = lista_atual
             if filtro_horario_visualizacao != "Todos os Horários":
-                # Verifica se a chave 'Horário' existe nos registros antigos para compatibilidade
                 lista_para_exibir = [
                     item for item in lista_atual 
-                    if item.get("Horário", "18:00 (Noite)") == filtro_horario_visualizacao
+                    if item.get("Horário", "") == filtro_horario_visualizacao
                 ]
 
             if lista_para_exibir:
@@ -465,7 +462,8 @@ with aba_escalas:
                     with c_data:
                         inp_data = st.date_input("Data do Culto", key=f"data_{i}")
                     with c_horario:
-                        inp_horario = st.selectbox("Horário do Culto", opcoes_horarios_culto, key=f"horario_{i}")
+                        # Campo de texto livre para escolher qualquer horário
+                        inp_horario = st.text_input("Horário do Culto", value="18:00", key=f"horario_{i}", placeholder="Ex: 10:30, 19:00...")
                     with c_vocal:
                         inp_vocal = st.selectbox("Vocal / Líder", [""] + nomes_disponiveis_cadastrados, key=f"vocal_{i}")
                     with c_musicos:
@@ -511,10 +509,8 @@ with aba_musicos:
         
         nomes_participantes_musicos = [p["Nome"] for p in st.session_state.participantes] if st.session_state.participantes else ["João Silva", "Maria Oliveira"]
 
-        # CATEGORIAS RESTRITAS EXATAMENTE CONFORME SOLICITADO
         lista_categorias_exatas = ["Cordas", "Teclas", "Percussão", "Outro"]
 
-        # INSTRUMENTOS DINÂMICOS POR CATEGORIA
         mapa_instrumentos_igreja = {
             "Cordas": ["Violão", "Guitarra", "Contrabaixo", "Violino", "Viola", "Ukulele", "Cello"],
             "Teclas": ["Teclado", "Piano", "Órgão", "Synthesizer", "Piano Digital"],
