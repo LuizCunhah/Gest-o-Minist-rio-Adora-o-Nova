@@ -21,7 +21,7 @@ else:
     img_base64 = ""
 
 # --- BANNER DA SEGUNDA FOTO ---
-CAMINHO_BANNER = "NOVA-NITEROI-Rj_2.jpg"
+CAMINHO_BANNER = "C:\Users\lhpcu\OneDrive\Desktop"
 
 # --- ESTILOS CSS ---
 css_fundo = f"""
