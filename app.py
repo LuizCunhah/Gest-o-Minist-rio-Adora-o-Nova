@@ -12,7 +12,7 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- CONVERSÃO DA IMAGEM ENVIADA PARA BASE64 (USO FIEL COMO FUNDO) ---
+# --- CONVERSÃO DA FOTO DE FUNDO (CAMPO VERDE NO ENTARDECER DE VERÃO) ---
 CAMINHO_FUNDO_FOTO = "matt-richmond-8fhGzN5ktJo-unsplash_2.jpg"
 
 if os.path.exists(CAMINHO_FUNDO_FOTO):
@@ -21,90 +21,100 @@ if os.path.exists(CAMINHO_FUNDO_FOTO):
 else:
     img_base64 = ""
 
-# --- ESTILOS CSS COM FUNDO TRANSLÚCIDO E A FOTO EXATA ---
+# --- ESTILOS CSS COM O FUNDO TRANSLÚCIDO E TONALIDADE DE ENTARDECER DE VERÃO ---
 css_fundo = f"""
     .stApp {{
-        background: linear-gradient(rgba(240, 244, 240, 0.82), rgba(240, 244, 240, 0.82)), url("data:image/jpeg;base64,{img_base64}") !important;
+        background: linear-gradient(rgba(20, 40, 25, 0.75), rgba(40, 25, 15, 0.75)), url("data:image/jpeg;base64,{img_base64}") !important;
         background-size: cover !important;
         background-position: center !important;
         background-attachment: fixed !important;
-        color: #1e293b !important;
+        color: #f8fafc !important;
     }}
     
     h1, h2, h3, h4, h5, h6, p, span, label, .stMarkdown {{
-        color: #1e293b !important;
+        color: #f8fafc !important;
     }}
-    .stTextInput label, .stSelectbox label, .stDateInput label, .stTextArea label {{
-        color: #14532d !important;
+    .stTextInput label, .stSelectbox label, .stDateInput label, .stTextArea label, .stMultiSelect label {{
+        color: #bbf7d0 !important;
         font-weight: 600 !important;
     }}
     
     .stTextInput input, .stTextArea textarea, .stSelectbox select {{
-        background-color: rgba(255, 255, 255, 0.95) !important;
+        background-color: rgba(255, 255, 255, 0.90) !important;
         color: #0f172a !important;
-        border: 1px solid #86efac !important;
+        border: 1px solid #4ade80 !important;
         border-radius: 6px !important;
     }}
     
     .titulo-principal {{
         font-size: 38px !important;
         font-weight: bold !important;
-        color: #14532d !important;
+        color: #fef08a !important;
         text-align: center;
         margin-top: 10px;
-        text-shadow: 1px 1px 2px rgba(255,255,255,0.9);
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
     }}
     .sub-titulo {{
         font-size: 18px !important;
-        color: #166534 !important;
+        color: #bbf7d0 !important;
         text-align: center;
         margin-bottom: 20px;
         font-weight: 500;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
     }}
     div.stButton > button:first-child {{
-        background-color: #15803d !important;
+        background-color: #16a34a !important;
         color: white !important;
         font-weight: bold;
         border-radius: 8px;
     }}
     .bloco-admin {{
-        background-color: rgba(255, 255, 255, 0.92);
+        background-color: rgba(15, 23, 42, 0.85);
         padding: 20px;
         border-radius: 12px;
         border: 2px solid #22c55e;
         margin-bottom: 20px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
     }}
     .bloco-versiculo {{
-        background: linear-gradient(135deg, #14532d 0%, #166534 100%);
+        background: linear-gradient(135deg, rgba(20, 83, 45, 0.9) 0%, rgba(120, 53, 15, 0.9) 100%);
         color: white !important;
         padding: 20px;
         border-radius: 12px;
         margin-bottom: 20px;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        border: 1px solid #eab308;
     }}
     .bloco-versiculo *, .bloco-versiculo p, .bloco-versiculo h3 {{
         color: white !important;
     }}
     .alerta-item {{
-        background-color: rgba(255, 255, 255, 0.92);
+        background-color: rgba(15, 23, 42, 0.85);
         padding: 12px 16px;
         border-radius: 8px;
         border-left: 5px solid #22c55e;
         margin-bottom: 10px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }}
+    /* Botão de Refresh Flutuante no canto inferior esquerdo */
+    .botao-refresh-container {{
+        position: fixed;
+        bottom: 20px;
+        left: 20px;
+        z-index: 99999;
     }}
 """
 
 st.markdown(f"<style>{css_fundo}</style>", unsafe_allow_html=True)
 
-# --- BANCO DE DADOS PERMANENTES (JSON) ---
+# --- BANCOS DE DADOS PERMANENTES (JSON) ---
 ARQUIVO_CONFIG = "dados_config.json"
 ARQUIVO_ESCALAS = "dados_escalas.json"
 ARQUIVO_REPERTORIO = "dados_repertorio.json"
 ARQUIVO_LOGS = "dados_logs.json"
 ARQUIVO_DANCA = "dados_danca.json"
 ARQUIVO_MUSICOS = "dados_musicos.json"
+ARQUIVO_PARTICIPANTES = "dados_participantes.json"
 
 def carregar_dados_sistema():
     if os.path.exists(ARQUIVO_CONFIG):
@@ -151,6 +161,21 @@ def carregar_dados_sistema():
             {"ID": 2, "Nome": "Maria Oliveira", "Instrumento": "Teclado / Piano", "Categoria": "Teclas"}
         ]
 
+    if os.path.exists(ARQUIVO_PARTICIPANTES):
+        with open(ARQUIVO_PARTICIPANTES, "r", encoding="utf-8") as f:
+            st.session_state.participantes = json.load(f)
+    else:
+        st.session_state.participantes = [
+            {
+                "ID": 1, "Nome": "João Silva", "Funcao": "Músico", "Telefone": "(21) 99999-1111", 
+                "Email": "joao@email.com", "Endereco": "Rua A, 100", "Aniversario": "15/05", "Sugestoes": "Nenhuma"
+            },
+            {
+                "ID": 2, "Nome": "Ana Souza", "Funcao": "Dança", "Telefone": "(21) 98888-2222", 
+                "Email": "ana@email.com", "Endereco": "Rua B, 200", "Aniversario": "22/08", "Sugestoes": "Mais ensaios aos sábados"
+            }
+        ]
+
     if os.path.exists(ARQUIVO_LOGS):
         with open(ARQUIVO_LOGS, "r", encoding="utf-8") as f:
             st.session_state.logs_notificacoes = json.load(f)
@@ -166,6 +191,8 @@ def salvar_dados_sistema():
         json.dump(st.session_state.danca, f, ensure_ascii=False, indent=4)
     with open(ARQUIVO_MUSICOS, "w", encoding="utf-8") as f:
         json.dump(st.session_state.musicos, f, ensure_ascii=False, indent=4)
+    with open(ARQUIVO_PARTICIPANTES, "w", encoding="utf-8") as f:
+        json.dump(st.session_state.participantes, f, ensure_ascii=False, indent=4)
     with open(ARQUIVO_LOGS, "w", encoding="utf-8") as f:
         json.dump(st.session_state.logs_notificacoes, f, ensure_ascii=False, indent=4)
     with open(ARQUIVO_CONFIG, "w", encoding="utf-8") as f:
@@ -217,7 +244,7 @@ else:
     st.markdown(f"<div class='titulo-principal'>{st.session_state.titulo_app}</div>", unsafe_allow_html=True)
     st.markdown(f"<div class='sub-titulo'>{st.session_state.sub_titulo_app}</div>", unsafe_allow_html=True)
 
-# --- BLOCO DE VERSÍCULO AUTOMÁTICO (VERSÃO BKJ 1611 - MUDANÇA A CADA 1H30) ---
+# --- BLOCO DE VERSÍCULO AUTOMÁTICO (VERSÃO BKJ 1611) ---
 lista_versiculos_bkj1611 = [
     {
         "texto": "Ó Deus, tu és o meu Deus; de madrugada te busco; a minha alma tem sede de ti; a minha carne te deseja em uma terra seca e cansada, onde não há água.",
@@ -230,22 +257,6 @@ lista_versiculos_bkj1611 = [
     {
         "texto": "E tudo quanto fizerdes, fazei-o de todo o coração, como ao Senhor, e não aos homens; sabendo que recebereis do Senhor o galardão da herança, porque a Cristo, o Senhor, servis.",
         "referencia": "Colossenses 3:23-24 (BKJ 1611)"
-    },
-    {
-        "texto": "Alegrei-me quando me disseram: Vamos à casa do Senhor. Os nossos pés pararão dentro das tuas portas, ó Jerusalém.",
-        "referencia": "Salmos 122:1-2 (BKJ 1611)"
-    },
-    {
-        "texto": "Louvai ao Senhor, porque ele é bom; porque a sua misericórdia dura para sempre.",
-        "referencia": "Salmos 136:1 (BKJ 1611)"
-    },
-    {
-        "texto": "Eu te exaltarei, ó Deus, meu Rei; e bendirei o teu nome para todo o sempre. Todos os dias te bendirei, e louvarei o teu nome para todo o sempre.",
-        "referencia": "Salmos 145:1-2 (BKJ 1611)"
-    },
-    {
-        "texto": "Mas a hora vem, e agora é, em que os verdadeiros adoradores adorarão o Pai em espírito e em verdade; porque o Pai procura a tais que assim o adorem.",
-        "referencia": "João 4:23 (BKJ 1611)"
     }
 ]
 
@@ -265,7 +276,7 @@ st.markdown(f"""
 st.markdown("<div class='bloco-admin'>", unsafe_allow_html=True)
 if not st.session_state.logado:
     st.markdown("### 🔒 Acesso Público (Visualização Livre) / Painel Administrativo")
-    st.info("💡 Todos podem navegar livremente pelo aplicativo. Insira as credenciais abaixo apenas se precisar alterar, cadastrar ou excluir dados:")
+    st.info("💡 Todos podem navegar livremente pelo aplicativo. Insira as credenciais abaixo apenas se precisar alterar dados na aba principal restrita:")
     c_user, c_pass, c_bt = st.columns([3, 3, 2])
     with c_user:
         login_u = st.text_input("Usuário ADM", key="login_usuario_interface")
@@ -284,7 +295,7 @@ if not st.session_state.logado:
 else:
     col_inf1, col_inf2 = st.columns([6, 2])
     with col_inf1:
-        st.markdown(f"🟢 **Modo Administrador Ativo (Logado como: {st.session_state.usuario_atual})**. Funções de edição e exclusão liberadas.")
+        st.markdown(f"🟢 **Modo Administrador Ativo (Logado como: {st.session_state.usuario_atual})**. Gestão total liberada na aba principal.")
     with col_inf2:
         if st.button("🚪 Sair do Modo ADM", use_container_width=True):
             st.session_state.logado = False
@@ -292,64 +303,157 @@ else:
             st.rerun()
 st.markdown("</div>", unsafe_allow_html=True)
 
-# --- PAINEL DE CONFIGURAÇÕES GLOBAIS E UPLOAD DE BANNER (APENAS ADM) ---
+# --- BOTÃO DE REFRESH NA PARTE INFERIOR ESQUERDA ---
+st.markdown("""
+    <div class="botao-refresh-container">
+""", unsafe_allow_html=True)
+if st.button("🔄 Atualizar Tela"):
+    st.rerun()
+st.markdown("</div>", unsafe_allow_html=True)
+
+# --- NAVEGAÇÃO POR ABAS (A ABA DO ADMINISTRADOR AGORA É A PRIMEIRA E PRINCIPAL) ---
 if st.session_state.logado:
-    with st.container():
-        st.markdown("<div class='bloco-admin'>", unsafe_allow_html=True)
-        st.markdown("### ⚙️ Painel de Configurações, Capa e ADMs")
-        
-        col_t1, col_t2 = st.columns(2)
-        with col_t1:
-            edt_titulo = st.text_input("Editar Título do Aplicativo", value=st.session_state.titulo_app)
-        with col_t2:
-            edt_sub = st.text_input("Editar Subtítulo do Aplicativo", value=st.session_state.sub_titulo_app)
+    aba_adm_principal, aba_escalas, aba_musicos, aba_repertorio, aba_danca, aba_devocional = st.tabs([
+        "👑 Gestão Geral (Admin)", "📊 Escalas Sincronizadas", "🎸 Gestão de Músicos", "🎶 Repertório & Cifras", "🩰 Ministério de Dança", "📖 Devocional & Alertas"
+    ])
+else:
+    aba_escalas, aba_musicos, aba_repertorio, aba_danca, aba_devocional = st.tabs([
+        "📊 Escalas Sincronizadas", "🎸 Gestão de Músicos", "🎶 Repertório & Cifras", "🩰 Ministério de Dança", "📖 Devocional & Alertas"
+    ])
 
-        st.markdown("#### 🖼️ Inserir Imagem de Capa (Banner Superior)")
-        arquivo_banner = st.file_uploader("Escolha uma imagem (PNG, JPG, JPEG) para usar como banner de capa", type=["png", "jpg", "jpeg"])
-        
-        if arquivo_banner is not None:
-            caminho_salvar = "banner_capa.png"
-            with open(caminho_salvar, "wb") as f:
-                f.write(arquivo_banner.getbuffer())
-            st.session_state.banner_path = caminho_salvar
-            st.success("Banner enviado com sucesso! Clique em salvar alterações abaixo para aplicar.")
+# 0. ABA PRINCIPAL RESTRITA AO ADMINISTRADOR (GESTAO DE PARTICIPANTES E CONFIGURAÇÕES GLOBAIS)
+if st.session_state.logado:
+    with aba_adm_principal:
+        st.subheader("👑 Área Restrita do Administrador — Gestão Geral do Aplicativo")
+        st.info("Gerencie aqui todos os participantes do ministério (com dados completos de contato, endereço, aniversário e sugestões) e configure as informações gerais de título, capa e extensões.")
 
-        st.markdown("**Nomes das 3 Extensões Cadastradas:**")
-        col_ex0, col_ex1, col_ex2 = st.columns(3)
-        with col_ex0:
-            nome_ext0 = st.text_input("Extensão 1", value=st.session_state.nomes_extensoes[0])
-        with col_ex1:
-            nome_ext1 = st.text_input("Extensão 2", value=st.session_state.nomes_extensoes[1])
-        with col_ex2:
-            nome_ext2 = st.text_input("Extensão 3", value=st.session_state.nomes_extensoes[2])
+        st.markdown("---")
+        st.markdown("### 📋 Cadastro de Novo Participante (Ministério / Músicos / Dança)")
+        with st.form("form_novo_participante_geral"):
+            col_p1, col_p2 = st.columns(2)
+            with col_p1:
+                p_nome = st.text_input("Nome Completo")
+                p_funcao = st.selectbox("Função Principal", ["Músico", "Dança", "Vocal", "Apoio / Técnica", "Outros"])
+                p_tel = st.text_input("Telefone / WhatsApp")
+                p_email = st.text_input("E-mail")
+            with col_p2:
+                p_end = st.text_input("Endereço")
+                p_aniv = st.text_input("Data de Aniversário (ex: DD/MM)")
+                p_sug = st.text_area("Sugestões / Observações")
 
-        if st.button("💾 SALVAR ALTERAÇÕES GLOBAIS"):
-            novos_nomes_lista = [nome_ext0, nome_ext1, nome_ext2]
-            antigos_nomes_lista = st.session_state.nomes_extensoes
+            if st.form_submit_button("➕ Cadastrar Participante"):
+                if p_nome:
+                    novo_id_p = max([p["ID"] for p in st.session_state.participantes], default=0) + 1
+                    novo_registro = {
+                        "ID": novo_id_p, "Nome": p_nome, "Funcao": p_funcao, "Telefone": p_tel,
+                        "Email": p_email, "Endereco": p_end, "Aniversario": p_aniv, "Sugestoes": p_sug
+                    }
+                    st.session_state.participantes.append(novo_registro)
+                    
+                    # Sincroniza automaticamente com Músicos se for músico ou vocal
+                    if p_funcao in ["Músico", "Vocal"]:
+                        novo_id_m = max([m["ID"] for m in st.session_state.musicos], default=0) + 1
+                        st.session_state.musicos.append({
+                            "ID": novo_id_m, "Nome": p_nome, "Instrumento": p_funcao, "Categoria": "Geral"
+                        })
 
-            nova_estrutura = {}
-            for index, n_novo in enumerate(novos_nomes_lista):
-                n_antigo = antigos_nomes_lista[index] if index < len(antigos_nomes_lista) else n_novo
-                nova_estrutura[n_novo] = st.session_state.escalas.get(n_antigo, [])
+                    salvar_dados_sistema()
+                    registrar_alerta(f"Participante cadastrado: {p_nome} ({p_funcao}).")
+                    st.success("Participante cadastrado com sucesso!")
+                    st.rerun()
+                else:
+                    st.error("O nome do participante é obrigatório.")
 
-            st.session_state.escalas = nova_estrutura
-            st.session_state.titulo_app = edt_titulo
-            st.session_state.sub_titulo_app = edt_sub
-            st.session_state.nomes_extensoes = novos_nomes_lista
+        st.markdown("---")
+        st.markdown("### 🛠️ Editar ou Excluir Participantes Cadastrados")
+        if st.session_state.participantes:
+            opcoes_part = {f"ID {p['ID']} - {p['Nome']} ({p['Funcao']})": p for p in st.session_state.participantes}
+            escolha_part_str = st.selectbox("Selecione o Participante", list(opcoes_part.keys()))
+            part_selecionado = opcoes_part[escolha_part_str]
 
-            salvar_dados_sistema()
-            st.success("Configurações atualizadas com sucesso!")
-            st.rerun()
-        st.markdown("</div>", unsafe_allow_html=True)
+            with st.form("form_editar_excluir_participante"):
+                ep_nome = st.text_input("Nome Completo", value=part_selecionado["Nome"])
+                ep_funcao = st.selectbox("Função Principal", ["Músico", "Dança", "Vocal", "Apoio / Técnica", "Outros"], index=["Músico", "Dança", "Vocal", "Apoio / Técnica", "Outros"].index(part_selecionado["Funcao"]) if part_selecionado["Funcao"] in ["Músico", "Dança", "Vocal", "Apoio / Técnica", "Outros"] else 0)
+                ep_tel = st.text_input("Telefone / WhatsApp", value=part_selecionado["Telefone"])
+                ep_email = st.text_input("E-mail", value=part_selecionado["Email"])
+                ep_end = st.text_input("Endereço", value=part_selecionado["Endereco"])
+                ep_aniv = st.text_input("Data de Aniversário (ex: DD/MM)", value=part_selecionado["Aniversario"])
+                ep_sug = st.text_area("Sugestões / Observações", value=part_selecionado["Sugestoes"])
 
-# --- NAVEGAÇÃO POR ABAS ---
-aba_escalas, aba_musicos, aba_repertorio, aba_danca, aba_devocional = st.tabs([
-    "📊 Escalas Sincronizadas", "🎸 Gestão de Músicos", "🎶 Repertório & Cifras", "🩰 Ministério de Dança", "📖 Devocional & Alertas"
-])
+                col_eb1, col_eb2 = st.columns(2)
+                with col_eb1:
+                    btn_salvar_part = st.form_submit_button("💾 Salvar Alterações do Participante")
+                with col_eb2:
+                    btn_excluir_part = st.form_submit_button("🗑️ Excluir Participante")
+
+                if btn_salvar_part:
+                    for p in st.session_state.participantes:
+                        if p["ID"] == part_selecionado["ID"]:
+                            p["Nome"] = ep_nome
+                            p["Funcao"] = ep_funcao
+                            p["Telefone"] = ep_tel
+                            p["Email"] = ep_email
+                            p["Endereco"] = ep_end
+                            p["Aniversario"] = ep_aniv
+                            p["Sugestoes"] = ep_sug
+                            break
+                    salvar_dados_sistema()
+                    registrar_alerta(f"Participante atualizado: {ep_nome}.")
+                    st.success("Participante atualizado com sucesso!")
+                    st.rerun()
+
+                if btn_excluir_part:
+                    st.session_state.participantes = [p for p in st.session_state.participantes if p["ID"] != part_selecionado["ID"]]
+                    salvar_dados_sistema()
+                    registrar_alerta(f"Participante removido: {part_selecionado['Nome']}.")
+                    st.success("Participante excluído com sucesso!")
+                    st.rerun()
+
+            st.markdown("#### 📊 Tabela Geral de Participantes")
+            st.dataframe(pd.DataFrame(st.session_state.participantes), use_container_width=True)
+
+        st.markdown("---")
+        st.markdown("### ⚙️ Configurações Gerais do Aplicativo (Título, Capa e Extensões)")
+        with st.form("form_config_geral_app"):
+            col_t1, col_t2 = st.columns(2)
+            with col_t1:
+                edt_titulo = st.text_input("Título do Aplicativo", value=st.session_state.titulo_app)
+            with col_t2:
+                edt_sub = st.text_input("Subtítulo do Aplicativo", value=st.session_state.sub_titulo_app)
+
+            st.markdown("**Nomes das 3 Extensões Cadastradas:**")
+            col_ex0, col_ex1, col_ex2 = st.columns(3)
+            with col_ex0:
+                nome_ext0 = st.text_input("Extensão 1", value=st.session_state.nomes_extensoes[0])
+            with col_ex1:
+                nome_ext1 = st.text_input("Extensão 2", value=st.session_state.nomes_extensoes[1])
+            with col_ex2:
+                nome_ext2 = st.text_input("Extensão 3", value=st.session_state.nomes_extensoes[2])
+
+            if st.form_submit_button("💾 Salvar Configurações Globais"):
+                novos_nomes_lista = [nome_ext0, nome_ext1, nome_ext2]
+                antigos_nomes_lista = st.session_state.nomes_extensoes
+
+                nova_estrutura = {}
+                for index, n_novo in enumerate(novos_nomes_lista):
+                    n_antigo = antigos_nomes_lista[index] if index < len(antigos_nomes_lista) else n_novo
+                    nova_estrutura[n_novo] = st.session_state.escalas.get(n_antigo, [])
+
+                st.session_state.escalas = nova_estrutura
+                st.session_state.titulo_app = edt_titulo
+                st.session_state.sub_titulo_app = edt_sub
+                st.session_state.nomes_extensoes = novos_nomes_lista
+
+                salvar_dados_sistema()
+                st.success("Configurações atualizadas com sucesso!")
+                st.rerun()
 
 # 1. ABA DE ESCALAS
 with aba_escalas:
     sub_abas_locais = st.tabs([f"📍 {nome}" for nome in st.session_state.nomes_extensoes])
+
+    # Lista de nomes disponíveis para seleção rápida nos menus suspensos de vocais e músicos
+    nomes_disponiveis_cadastrados = [p["Nome"] for p in st.session_state.participantes] if st.session_state.participantes else ["João Silva", "Maria Oliveira"]
 
     for i, nome_da_extensao in enumerate(st.session_state.nomes_extensoes):
         with sub_abas_locais[i]:
@@ -375,9 +479,11 @@ with aba_escalas:
                     with c_data:
                         inp_data = st.date_input("Data do Culto", key=f"data_{i}")
                     with c_vocal:
-                        inp_vocal = st.text_input("Vocais", key=f"vocal_{i}")
+                        # Menu suspenso para selecionar vocais de forma fácil e rápida
+                        inp_vocal = st.selectbox("Selecione o Vocal / Líder", [""] + nomes_disponiveis_cadastrados, key=f"vocal_{i}")
                     with c_musicos:
-                        inp_musicos = st.text_input("Músicos", key=f"musicos_{i}")
+                        # Menu suspenso para selecionar músicos de forma fácil e rápida
+                        inp_musicos = st.selectbox("Selecione o Músico", [""] + nomes_disponiveis_cadastrados, key=f"musicos_{i}")
 
                     btn_adicionar = st.form_submit_button("➕ Adicionar Nova Escala")
                     if btn_adicionar:
@@ -403,7 +509,7 @@ with aba_escalas:
                         st.success("Registro excluído com sucesso!")
                         st.rerun()
 
-# 2. ABA DE MÚSICOS (COM FORMULÁRIO DE CADASTRO SEPARADO DO BLOCO DE EDIÇÃO/EXCLUSÃO)
+# 2. ABA DE MÚSICOS
 with aba_musicos:
     st.subheader("🎸 Equipe de Músicos & Instrumentos")
     if st.session_state.musicos:
@@ -414,8 +520,6 @@ with aba_musicos:
 
     if st.session_state.logado:
         st.markdown("---")
-        
-        # Bloco 1: Apenas Cadastrar Novo Músico
         st.markdown("### ➕ Cadastrar Novo Músico")
         with st.form("form_novo_musico"):
             col_m1, col_m2, col_m3 = st.columns(3)
@@ -442,7 +546,6 @@ with aba_musicos:
                 else:
                     st.error("O nome do músico não pode estar vazio.")
 
-        # Bloco 2: Separado para Editar ou Excluir Músico Existente
         if st.session_state.musicos:
             st.markdown("---")
             st.markdown("### 🛠️ Gerenciar / Editar / Excluir Músico")
@@ -511,7 +614,7 @@ with aba_repertorio:
                     st.success("Música cadastrada!")
                     st.rerun()
 
-# 4. ABA DE DANÇAS (COM BOTÃO DE EXCLUIR)
+# 4. ABA DE DANÇAS (COM MENU SUSPENSO DE SELEÇÃO RÁPIDA)
 with aba_danca:
     st.subheader("🩰 Ministério de Dança - Escalas e Ensaios")
     if st.session_state.danca:
@@ -523,9 +626,14 @@ with aba_danca:
     if st.session_state.logado:
         st.markdown("---")
         st.markdown("### 🛠️ Adicionar Registro de Dança")
+        
+        # Nomes de participantes cadastrados para seleção rápida
+        nomes_participantes_danca = [p["Nome"] for p in st.session_state.participantes] if st.session_state.participantes else ["Ana Souza", "Beatriz Lima"]
+
         with st.form("form_danca"):
             d_data = st.date_input("Data do Evento/Ensaio")
-            d_responsaveis = st.text_input("Responsáveis / Coreógrafas")
+            # Menu suspenso para selecionar os responsáveis de forma fácil e rápida
+            d_responsaveis = st.selectbox("Selecione o Responsável / Coreógrafa", [""] + nomes_participantes_danca)
             d_obs = st.text_input("Observações / Coreografia")
             if st.form_submit_button("➕ Adicionar Registro de Dança"):
                 novo_registro_danca = {
@@ -555,7 +663,7 @@ with aba_danca:
 # 5. ABA DE DEVOCIONAL E ALERTAS
 with aba_devocional:
     st.subheader("📖 Histórico de Modificações & Alertas")
-    st.info("💡 Sempre que abrir o link do aplicativo, esta aba exibirá o histórico completo e cronológico de todas as modificações feitas pela liderança, garantindo que você veja o que mudou desde o último acesso.")
+    st.info("💡 Sempre que abrir o link do aplicativo, esta aba exibirá o histórico completo e cronológico de todas as modificações feitas pela liderança.")
     
     if st.session_state.logs_notificacoes:
         st.markdown("---")
@@ -569,8 +677,8 @@ with aba_devocional:
                 
             st.markdown(f"""
                 <div class='alerta-item'>
-                    <span style='font-size: 12px; color: #64748b; font-weight: bold;'>🕒 {data_log}</span><br>
-                    <span style='font-size: 15px; color: #1e293b;'>{msg_log}</span>
+                    <span style='font-size: 12px; color: #94a3b8; font-weight: bold;'>🕒 {data_log}</span><br>
+                    <span style='font-size: 15px; color: #f8fafc;'>{msg_log}</span>
                 </div>
             """, unsafe_allow_html=True)
     else:
