@@ -13,7 +13,7 @@ st.set_page_config(
 )
 
 # --- CONVERSÃO DA FOTO DE FUNDO ---
-CAMINHO_FUNDO_FOTO = "C:\Users\lhpcu\OneDrive\Desktop"
+CAMINHO_FUNDO_FOTO = "matt-richmond-8fhGzN5ktJo-unsplash_2.jpg"
 if os.path.exists(CAMINHO_FUNDO_FOTO):
     with open(CAMINHO_FUNDO_FOTO, "rb") as f:
         img_base64 = base64.b64encode(f.read()).decode("utf-8")
@@ -21,7 +21,7 @@ else:
     img_base64 = ""
 
 # --- BANNER DA SEGUNDA FOTO ---
-CAMINHO_BANNER = "C:\Users\lhpcu\OneDrive\Desktop"
+CAMINHO_BANNER = "NOVA-NITEROI-Rj_2.jpg"
 
 # --- ESTILOS CSS ---
 css_fundo = f"""
@@ -473,7 +473,7 @@ with aba_escalas:
                         st.success("Registro excluído com sucesso!")
                         st.rerun()
 
-# 2. ABA DE MÚSICOS (COM CATEGORIAS EXATAS E INSTRUMENTOS AUTOMATIZADOS)
+# 2. ABA DE MÚSICOS (COM CATEGORIAS E INSTRUMENTOS AJUSTADOS EXATAMENTE)
 with aba_musicos:
     st.subheader("🎸 Equipe de Músicos & Instrumentos")
     if st.session_state.musicos:
@@ -488,47 +488,43 @@ with aba_musicos:
         
         nomes_participantes_musicos = [p["Nome"] for p in st.session_state.participantes] if st.session_state.participantes else ["João Silva", "Maria Oliveira"]
 
-        # RESTRIÇÃO EXATA DAS CATEGORIAS SOLICITADAS
+        # CATEGORIAS RESTRITAS EXATAMENTE CONFORME SOLICITADO
         lista_categorias_exatas = ["Cordas", "Teclas", "Percussão", "Outro"]
 
-        # MAPEAMENTO DOS PRINCIPAIS INSTRUMENTOS USADOS NAS IGREJAS ATUALMENTE
+        # INSTRUMENTOS DINÂMICOS POR CATEGORIA
         mapa_instrumentos_igreja = {
             "Cordas": ["Violão", "Guitarra", "Contrabaixo", "Violino", "Viola", "Ukulele", "Cello"],
             "Teclas": ["Teclado", "Piano", "Órgão", "Synthesizer", "Piano Digital"],
             "Percussão": ["Bateria", "Cajón", "Pandeiro", "Bongô", "Congas", "Timbales", "Percussão Geral"],
-            "Outro": ["Saxofone", "Flauta", "Trompete", "Clarinet", "Vocal / Backing Vocal"]
+            "Outro": ["Saxofone", "Flauta", "Trompete", "Clarinete", "Vocal / Backing Vocal"]
         }
 
-        with st.form("form_novo_musico"):
-            col_m1, col_m2, col_m3 = st.columns(3)
-            
-            with col_m1:
-                nome_musico = st.selectbox("Nome do Músico", [""] + nomes_participantes_musicos)
-            
-            with col_m2:
-                # Menu suspenso estrito contendo APENAS: Cordas, Teclas, Percussão, Outro
-                categoria_selecionada = st.selectbox("Categoria", lista_categorias_exatas)
-            
-            with col_m3:
-                # Menu suspenso dinâmico baseado na categoria escolhida com os instrumentos da igreja
-                instrumentos_disponiveis = mapa_instrumentos_igreja.get(categoria_selecionada, ["Outro"])
-                instrumento_principal = st.selectbox("Instrumento Principal", instrumentos_disponiveis)
+        # Para permitir a seleção dinâmica do instrumento antes de submeter o formulário no Streamlit:
+        c_m1, c_m2 = st.columns(2)
+        with c_m1:
+            nome_musico_sel = st.selectbox("Nome do Músico", [""] + nomes_participantes_musicos, key="cad_musico_nome")
+        with c_m2:
+            categoria_sel = st.selectbox("Categoria", lista_categorias_exatas, key="cad_musico_cat")
 
-            if st.form_submit_button("➕ Cadastrar Músico"):
-                if nome_musico:
-                    novo_id = max([m["ID"] for m in st.session_state.musicos], default=0) + 1
-                    st.session_state.musicos.append({
-                        "ID": novo_id,
-                        "Nome": nome_musico,
-                        "Instrumento": instrumento_principal,
-                        "Categoria": categoria_selecionada
-                    })
-                    salvar_dados_sistema()
-                    registrar_alerta(f"Músico cadastrado: {nome_musico} ({instrumento_principal}).")
-                    st.success(f"Músico {nome_musico} adicionado com sucesso!")
-                    st.rerun()
-                else:
-                    st.error("Por favor, selecione o nome do músico.")
+        # Seleção dinâmica dos instrumentos com base na categoria escolhida acima
+        instrumentos_disponiveis = mapa_instrumentos_igreja.get(categoria_sel, ["Outro"])
+        instrumento_principal_sel = st.selectbox("Instrumento Principal", instrumentos_disponiveis, key="cad_musico_inst")
+
+        if st.button("➕ Cadastrar Músico na Equipe"):
+            if nome_musico_sel:
+                novo_id = max([m["ID"] for m in st.session_state.musicos], default=0) + 1
+                st.session_state.musicos.append({
+                    "ID": novo_id,
+                    "Nome": nome_musico_sel,
+                    "Instrumento": instrumento_principal_sel,
+                    "Categoria": categoria_sel
+                })
+                salvar_dados_sistema()
+                registrar_alerta(f"Músico cadastrado: {nome_musico_sel} ({instrumento_principal_sel}).")
+                st.success(f"Músico {nome_musico_sel} adicionado com sucesso!")
+                st.rerun()
+            else:
+                st.error("Por favor, selecione o nome do músico.")
 
         if st.session_state.musicos:
             st.markdown("---")
@@ -543,7 +539,6 @@ with aba_musicos:
                 ed_nome = st.text_input("Nome do Músico", value=musico_selecionado["Nome"])
                 ed_cat = st.selectbox("Categoria", lista_categorias_exatas, index=lista_categorias_exatas.index(musico_selecionado["Categoria"]) if musico_selecionado["Categoria"] in lista_categorias_exatas else 0)
                 
-                # Lista de instrumentos para edição com base na categoria atual selecionada
                 ed_inst_lista = mapa_instrumentos_igreja.get(ed_cat, ["Outro"])
                 ed_inst = st.selectbox("Instrumento Principal", ed_inst_lista, index=ed_inst_lista.index(musico_selecionado["Instrumento"]) if musico_selecionado["Instrumento"] in ed_inst_lista else 0)
 
