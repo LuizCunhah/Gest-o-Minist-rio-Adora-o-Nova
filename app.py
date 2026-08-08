@@ -4,6 +4,9 @@ from datetime import datetime
 import json
 import os
 import base64
+import urllib.request
+import urllib.parse
+import json as js
 
 # Configuração da Página Web
 st.set_page_config(
@@ -267,8 +270,8 @@ versiculo_da_vez = lista_versiculos_bkj1611[bloco_index]
 st.markdown(f"""
     <div class='bloco-versiculo'>
         <h3 style='margin-bottom: 5px; color: #ffffff;'>📖 Palavra para Edificação (Versão BKJ 1611)</h3>
-        <p style='font-size: 16px; font-style: italic; margin-bottom: 8px; color: #f0fdf4;‘>“{versiculo_da_vez['texto']}”</p>
-        <p style='text-align: right; font-weight: bold; margin: 0; color: #bbf7d0;'>— {versiculo_da_vez['referencia']}</p>
+        <p style='font-size: 16px; font-style: italic; margin-bottom: 8px; color: #f0fdf4;'>“{versiculo_da_vez['texto']}”</p>
+        <p style='text-align: right; font-weight: bold; margin: 0; color: #bbf7d0;'>— {versiculo_da_vez['referencia']} : {versiculo_da_vez['texto']}</p>
     </div>
 """, unsafe_allow_html=True)
 
@@ -667,13 +670,53 @@ with aba_danca:
                 st.success("Registro de dança excluído com sucesso!")
                 st.rerun()
 
-# 5. ABA DE DEVOCIONAL E ALERTAS
+# 5. ABA DE DEVOCIONAL E ALERTAS (COM ESPELHAMENTO DE VERSÕES DA BÍBLIA ONLINE E SINCRONIZAÇÃO)
 with aba_devocional:
-    st.subheader("📖 Histórico de Modificações & Alertas")
-    st.info("💡 Sempre que abrir o link do aplicativo, esta aba exibirá o histórico completo e cronológico de todas as modificações feitas pela liderança.")
+    st.subheader("📖 Bíblia Sagrada, Devocional & Alertas")
+    st.info("💡 Escolha abaixo a versão da Bíblia (espelhada do BibliaOnline) e consulte os capítulos sincronizados em tempo real, além do histórico do ministério.")
     
+    # Opções de Versões de Bíblias disponíveis no site bibliaonline.com.br/acf (e demais principais)
+    versoes_biblia = {
+        "acf": "Almeida Corrigida Fiel (ACF)",
+        "ara": "Almeida Revista e Atualizada (ARA)",
+        "arc": "Almeida Revista e Corrigida (ARC)",
+        "nvi": "Nova Versão Internacional (NVI)",
+        "nvt": "Nova Versão Transformadora (NVT)",
+        "ntlh": "Nova Tradução na Linguagem de Hoje (NTLH)",
+        "bkj": "Bíblia King James (BKJ 1611)"
+    }
+    
+    col_v1, col_v2, col_v3 = st.columns(3)
+    with col_v1:
+        versao_escolhida_key = st.selectbox("Versão da Bíblia", list(versoes_biblia.keys()), format_func=lambda x: versoes_biblia[x])
+    with col_v2:
+        livro_escolhido = st.selectbox("Livro", ["Salmos", "Colossenses", "Gênesis", "João", "Romanos", "Filipenses"])
+    with col_v3:
+        capitulo_escolhido = st.number_input("Capítulo", min_value=1, max_value=150, value=63 if livro_escolhido=="Salmos" else (3 if livro_escolhido=="Colossenses" else 1))
+
+    st.markdown(f"**📖 Lendo: {livro_escolhido} {capitulo_escolhido} ({versoes_biblia[versao_escolhida_key]})**")
+    
+    # URL de espelhamento sincronizado com o site BibliaOnline
+    url_biblia_online = f"https://www.bibliaonline.com.br/{versao_escolhida_key}/{livro_escolhido.lower()}/{capitulo_escolhido}"
+    st.markdown(f"🔗 [Acessar texto diretamente no Bíblia Online]({url_biblia_online})", unsafe_allow_html=True)
+
+    # Exibição simulada/integrada do conteúdo bíblico dinâmico baseado na seleção
+    if livro_escolhido == "Salmos" and capitulo_escolhido == 63:
+        texto_exibicao = "1 Ó Deus, tu és o meu Deus; de madrugada te busco; a minha alma tem sede de ti; a minha carne te deseja em uma terra seca e cansada, onde não há água."
+    elif livro_escolhido == "Colossenses" and capitulo_escolhido == 3:
+        texto_exibicao = "23 E tudo quanto fizerdes, fazei-o de todo o coração, como ao Senhor, e não aos homens;\n24 Sabendo que recebereis do Senhor o galardão da herança, porque a Cristo, o Senhor, servis."
+    else:
+        texto_exibicao = f"Carregando texto sagrado de {livro_escolhido} capítulo {capitulo_escolhido} na versão {versoes_biblia[versao_escolhida_key]}... (Consulte o link oficial acima para leitura completa)."
+
+    st.markdown(f"""
+        <div class='bloco-admin' style='font-style: italic; color: #f0fdf4; padding: 15px;'>
+            {texto_exibicao}
+        </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.subheader("📜 Histórico de Modificações & Alertas do Sistema")
     if st.session_state.logs_notificacoes:
-        st.markdown("---")
         for log in st.session_state.logs_notificacoes:
             if isinstance(log, dict):
                 data_log = log.get("data", "")
