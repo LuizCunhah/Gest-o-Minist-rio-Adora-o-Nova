@@ -492,8 +492,8 @@ with aba_musicos:
 
         categorias_instrumentos = {
             "Cordas": ["Violão", "Guitarra", "Contrabaixo", "Violino", "Viola", "Ukulele", "Cello"],
-            "Teclas": ["Teclado", "Piano", "Órgão", "Sintetizador", "Piano Digital", "Painel de Teclas"],
-            "Percussão / Bateria": ["Bateria", "Percussão", "Cajon", "Bongô", "Pandeiro", "Congas", "Timbales", "Percussão Geral"],
+            "Teclas": ["Teclado", "Piano", "Órgão", "Sintetizador", "Piano Digital"],
+            "Percussão / Bateria": ["Bateria", "Percussão", "Teclado", "Piano", "Órgão", "Cajon", "Bongô", "Pandeiro", "Congas", "Timbales", "Percussão Geral"],
             "Outros": ["Flauta", "Saxofone", "Trompete", "Clarinete", "Vocal"]
         }
 
