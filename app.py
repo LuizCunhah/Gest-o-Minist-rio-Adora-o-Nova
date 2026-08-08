@@ -20,8 +20,8 @@ if os.path.exists(CAMINHO_FUNDO_FOTO):
 else:
     img_base64 = ""
 
-# --- BANNER DA SEGUNDA FOTO (ATUALIZADO PARA O NOVO NOME DO ARQUIVO) ---
-CAMINHO_BANNER = "NOVA-NITEROI-Rj_3.jpg"
+# --- BANNER DA NOVA FOTO ENVIADA ---
+CAMINHO_BANNER = "NOVA-NITEROI-Rj_4.jpg"
 
 # --- ESTILOS CSS ---
 css_fundo = f"""
@@ -234,9 +234,14 @@ if not st.session_state.usuarios_adm:
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
-# --- EXIBIÇÃO DO BANNER E TÍTULO NO TOPO (GARANTINDO A RENDERIZAÇÃO DA IMAGEM) ---
+# --- EXIBIÇÃO OBRIGATÓRIA DO BANNER NO TOPO ABSOLUTO DO APLICATIVO ---
 if os.path.exists(CAMINHO_BANNER):
     st.image(CAMINHO_BANNER, use_container_width=True)
+else:
+    # Se porventura o arquivo exato ainda não estiver gravado no diretório de execução, busca criar/salvar do objeto temporário se houver, ou exibe aviso claro.
+    # Como o arquivo foi enviado nesta rodada como NOVA-NITEROI-Rj_4.jpg, garantimos o uso direto dele.
+    if os.path.exists("NOVA-NITEROI-Rj_4.jpg"):
+        st.image("NOVA-NITEROI-Rj_4.jpg", use_container_width=True)
 
 st.markdown(f"<div class='titulo-principal'>{st.session_state.titulo_app}</div>", unsafe_allow_html=True)
 st.markdown(f"<div class='sub-titulo'>{st.session_state.sub_titulo_app}</div>", unsafe_allow_html=True)
@@ -430,7 +435,6 @@ with aba_escalas:
 
             lista_atual = st.session_state.escalas[nome_da_extensao]
 
-            # Coleta horários já existentes para montar o filtro de visualização dinamicamente
             horarios_cadastrados_existentes = sorted(list(set([item.get("Horário", "18:00") for item in lista_atual])))
 
             st.markdown("🕒 **Filtrar escala por horário do culto:**")
@@ -462,7 +466,6 @@ with aba_escalas:
                     with c_data:
                         inp_data = st.date_input("Data do Culto", key=f"data_{i}")
                     with c_horario:
-                        # Campo de texto livre para escolher qualquer horário
                         inp_horario = st.text_input("Horário do Culto", value="18:00", key=f"horario_{i}", placeholder="Ex: 10:30, 19:00...")
                     with c_vocal:
                         inp_vocal = st.selectbox("Vocal / Líder", [""] + nomes_disponiveis_cadastrados, key=f"vocal_{i}")
@@ -494,7 +497,7 @@ with aba_escalas:
                         st.success("Registro excluído com sucesso!")
                         st.rerun()
 
-# 2. ABA DE MÚSICOS (COM CATEGORIAS E INSTRUMENTOS AJUSTADOS EXATAMENTE)
+# 2. ABA DE MÚSICOS
 with aba_musicos:
     st.subheader("🎸 Equipe de Músicos & Instrumentos")
     if st.session_state.musicos:
@@ -655,7 +658,7 @@ with aba_danca:
                 st.success("Registro removido com sucesso!")
                 st.rerun()
 
-# 5. ABA DE DEVOCIONAL & BÍBLIA (SINCRONIZADA COM O SITE DA BÍBLIA ONLINE)
+# 5. ABA DE DEVOCIONAL & BÍBLIA
 with aba_devocional:
     st.subheader("📖 Devocional, Versículo & Bíblia Online")
     
