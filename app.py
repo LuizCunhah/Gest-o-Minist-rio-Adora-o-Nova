@@ -452,7 +452,7 @@ with aba_repertorio:
                     st.success("Música cadastrada!")
                     st.rerun()
 
-# 4. ABA DE DANÇAS
+# 4. ABA DE DANÇAS (ATUALIZADA COM BOTÃO DE EXCLUIR)
 with aba_danca:
     st.subheader("🩰 Ministério de Dança - Escalas e Ensaios")
     if st.session_state.danca:
@@ -463,6 +463,7 @@ with aba_danca:
 
     if st.session_state.logado:
         st.markdown("---")
+        st.markdown("### 🛠️ Adicionar Registro de Dança")
         with st.form("form_danca"):
             d_data = st.date_input("Data do Evento/Ensaio")
             d_responsaveis = st.text_input("Responsáveis / Coreógrafas")
@@ -478,6 +479,18 @@ with aba_danca:
                 salvar_dados_sistema()
                 registrar_alerta(f"Novo registro adicionado no Ministério de Dança para {d_data.strftime('%d/%m/%Y')}.")
                 st.success("Registro de dança adicionado!")
+                st.rerun()
+
+        if st.session_state.danca:
+            st.markdown("---")
+            st.markdown("### 🗑️ Excluir Registro de Dança")
+            ids_danca_disponiveis = [item["ID"] for item in st.session_state.danca]
+            id_danca_para_excluir = st.selectbox("Selecione o ID do registro de dança para excluir", ids_danca_disponiveis, key="del_danca_select")
+            if st.button("🗑️ Excluir Registro de Dança Selecionado", key="btn_del_danca"):
+                st.session_state.danca = [item for item in st.session_state.danca if item["ID"] != id_danca_para_excluir]
+                salvar_dados_sistema()
+                registrar_alerta(f"Registro de dança ID {id_danca_para_excluir} foi removido.")
+                st.success("Registro de dança excluído com sucesso!")
                 st.rerun()
 
 # 5. ABA DE DEVOCIONAL E ALERTAS
