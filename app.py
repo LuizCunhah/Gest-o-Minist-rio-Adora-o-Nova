@@ -12,24 +12,19 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- CONVERSÃO DA IMAGEM PARA BASE64 (ESTABILIZAÇÃO DO FUNDO SEM PISCAR) ---
-def obter_base64_imagem(caminho_imagem):
-    if os.path.exists(caminho_imagem):
-        with open(caminho_imagem, "rb") as f:
-            return base64.b64encode(f.read()).decode("utf-8")
-    return ""
+# --- CONVERSÃO DA IMAGEM ENVIADA PARA BASE64 (USO FIEL COMO FUNDO) ---
+CAMINHO_FUNDO_FOTO = "matt-richmond-8fhGzN5ktJo-unsplash_2.jpg"
 
-CAMINHO_FUNDO_FOTO = "fundo_folhas_orvalho.jpg"
-if not os.path.exists(CAMINHO_FUNDO_FOTO):
-    with open(CAMINHO_FUNDO_FOTO, "wb") as f_img:
-        f_img.write(b"")
+if os.path.exists(CAMINHO_FUNDO_FOTO):
+    with open(CAMINHO_FUNDO_FOTO, "rb") as f:
+        img_base64 = base64.b64encode(f.read()).decode("utf-8")
+else:
+    img_base64 = ""
 
-img_base64 = obter_base64_imagem(CAMINHO_FUNDO_FOTO)
-
-# --- ESTILOS CSS DEFINITIVOS (CORRIGIDO: DUPLICAÇÃO DE CHAVES PARA EVITAR ERRO DE F-STRING) ---
+# --- ESTILOS CSS COM FUNDO TRANSLÚCIDO E A FOTO EXATA ---
 css_fundo = f"""
     .stApp {{
-        background: linear-gradient(rgba(240, 244, 240, 0.88), rgba(240, 244, 240, 0.88)), url("data:image/jpeg;base64,{img_base64}") !important;
+        background: linear-gradient(rgba(240, 244, 240, 0.82), rgba(240, 244, 240, 0.82)), url("data:image/jpeg;base64,{img_base64}") !important;
         background-size: cover !important;
         background-position: center !important;
         background-attachment: fixed !important;
@@ -408,7 +403,7 @@ with aba_escalas:
                         st.success("Registro excluído com sucesso!")
                         st.rerun()
 
-# 2. ABA DE MÚSICOS
+# 2. ABA DE MÚSICOS (COM FORMULÁRIO DE CADASTRO SEPARADO DO BLOCO DE EDIÇÃO/EXCLUSÃO)
 with aba_musicos:
     st.subheader("🎸 Equipe de Músicos & Instrumentos")
     if st.session_state.musicos:
@@ -419,7 +414,9 @@ with aba_musicos:
 
     if st.session_state.logado:
         st.markdown("---")
-        st.markdown("### 🛠️ Adicionar ou Alterar Músico")
+        
+        # Bloco 1: Apenas Cadastrar Novo Músico
+        st.markdown("### ➕ Cadastrar Novo Músico")
         with st.form("form_novo_musico"):
             col_m1, col_m2, col_m3 = st.columns(3)
             with col_m1:
@@ -431,7 +428,7 @@ with aba_musicos:
 
             if st.form_submit_button("➕ Cadastrar Músico"):
                 if nome_musico:
-                    novo_id = len(st.session_state.musicos) + 1
+                    novo_id = max([m["ID"] for m in st.session_state.musicos], default=0) + 1
                     st.session_state.musicos.append({
                         "ID": novo_id,
                         "Nome": nome_musico,
@@ -439,8 +436,50 @@ with aba_musicos:
                         "Categoria": categoria_inst
                     })
                     salvar_dados_sistema()
-                    registrar_alerta(f"Músico cadastrado/atualizado: {nome_musico}.")
+                    registrar_alerta(f"Músico cadastrado: {nome_musico}.")
                     st.success(f"Músico {nome_musico} adicionado com sucesso!")
+                    st.rerun()
+                else:
+                    st.error("O nome do músico não pode estar vazio.")
+
+        # Bloco 2: Separado para Editar ou Excluir Músico Existente
+        if st.session_state.musicos:
+            st.markdown("---")
+            st.markdown("### 🛠️ Gerenciar / Editar / Excluir Músico")
+            
+            opcoes_musicos = {f"ID {m['ID']} - {m['Nome']} ({m['Instrumento']})": m for m in st.session_state.musicos}
+            escolha_musico_str = st.selectbox("Selecione o Músico para Editar ou Excluir", list(opcoes_musicos.keys()), key="select_gerenciar_musico")
+            
+            musico_selecionado = opcoes_musicos[escolha_musico_str]
+
+            with st.form("form_editar_excluir_musico"):
+                ed_nome = st.text_input("Nome do Músico", value=musico_selecionado["Nome"])
+                ed_cat = st.selectbox("Categoria", ["Cordas", "Teclas", "Percussão / Bateria", "Outros"], index=["Cordas", "Teclas", "Percussão / Bateria", "Outros"].index(musico_selecionado["Categoria"]) if musico_selecionado["Categoria"] in ["Cordas", "Teclas", "Percussão / Bateria", "Outros"] else 0)
+                ed_inst = st.text_input("Instrumento Principal", value=musico_selecionado["Instrumento"])
+
+                col_b1, col_b2 = st.columns(2)
+                with col_b1:
+                    btn_salvar_edicao = st.form_submit_button("💾 Salvar Alterações")
+                with col_b2:
+                    btn_excluir_musico = st.form_submit_button("🗑️ Excluir Músico")
+
+                if btn_salvar_edicao:
+                    for m in st.session_state.musicos:
+                        if m["ID"] == musico_selecionado["ID"]:
+                            m["Nome"] = ed_nome
+                            m["Categoria"] = ed_cat
+                            m["Instrumento"] = ed_inst
+                            break
+                    salvar_dados_sistema()
+                    registrar_alerta(f"Músico atualizado: {ed_nome}.")
+                    st.success("Músico atualizado com sucesso!")
+                    st.rerun()
+
+                if btn_excluir_musico:
+                    st.session_state.musicos = [m for m in st.session_state.musicos if m["ID"] != musico_selecionado["ID"]]
+                    salvar_dados_sistema()
+                    registrar_alerta(f"Músico removido: {musico_selecionado['Nome']}.")
+                    st.success("Músico excluído com sucesso!")
                     st.rerun()
 
 # 3. ABA DE REPERTÓRIO
