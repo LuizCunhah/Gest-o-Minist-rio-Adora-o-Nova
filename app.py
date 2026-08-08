@@ -241,34 +241,6 @@ if not st.session_state.usuarios_adm:
 st.markdown(f"<div class='titulo-principal'>{st.session_state.titulo_app}</div>", unsafe_allow_html=True)
 st.markdown(f"<div class='sub-titulo'>{st.session_state.sub_titulo_app}</div>", unsafe_allow_html=True)
 
-# --- BLOCO DE VERSÍCULO AUTOMÁTICO (VERSÃO BKJ 1611) ---
-lista_versiculos_bkj1611 = [
-    {
-        "texto": "Ó Deus, tu és o meu Deus; de madrugada te busco; a minha alma tem sede de ti; a minha carne te deseja em uma terra seca e cansada, onde não há água.",
-        "referencia": "Salmos 63:1 (BKJ 1611)"
-    },
-    {
-        "texto": "Cantai ao Senhor um cântico novo; cantai ao Senhor, toda a terra. Cantai ao Senhor, bendizei o seu nome; anunciai a sua salvação de dia em dia.",
-        "referencia": "Salmos 96:1-2 (BKJ 1611)"
-    },
-    {
-        "texto": "E tudo quanto fizerdes, fazei-o de todo o coração, como ao Senhor, e não aos homens; sabendo que recebereis do Senhor o galardão da herança, porque a Cristo, o Senhor, servis.",
-        "referencia": "Colossenses 3:23-24 (BKJ 1611)"
-    }
-]
-
-total_minutos_atual = int(datetime.now().timestamp() // 60)
-bloco_index = (total_minutos_atual // 90) % len(lista_versiculos_bkj1611)
-versiculo_da_vez = lista_versiculos_bkj1611[bloco_index]
-
-st.markdown(f"""
-    <div class='bloco-versiculo'>
-        <h3 style='margin-bottom: 5px; color: #ffffff;'>📖 Palavra para Edificação (Versão BKJ 1611)</h3>
-        <p style='font-size: 16px; font-style: italic; margin-bottom: 8px; color: #f0fdf4;'>“{versiculo_da_vez['texto']}”</p>
-        <p style='text-align: right; font-weight: bold; margin: 0; color: #bbf7d0;'>— {versiculo_da_vez['referencia']}</p>
-    </div>
-""", unsafe_allow_html=True)
-
 # --- SISTEMA DE LOGIN PÚBLICO / ADM ---
 st.markdown("<div class='bloco-admin'>", unsafe_allow_html=True)
 if not st.session_state.logado:
@@ -311,11 +283,11 @@ st.markdown("</div>", unsafe_allow_html=True)
 # --- NAVEGAÇÃO POR ABAS ---
 if st.session_state.logado:
     aba_adm_principal, aba_escalas, aba_musicos, aba_repertorio, aba_danca, aba_devocional = st.tabs([
-        "👑 Gestão Geral (Admin)", "📊 Escalas Sincronizadas", "🎸 Gestão de Músicos", "🎶 Repertório & Cifras", "🩰 Ministério de Dança", "📖 Devocional & Alertas"
+        "👑 Gestão Geral (Admin)", "📊 Escalas Sincronizadas", "🎸 Gestão de Músicos", "🎶 Repertório & Cifras", "🩰 Ministério de Dança", "📖 Devocional & Bíblia"
     ])
 else:
     aba_escalas, aba_musicos, aba_repertorio, aba_danca, aba_devocional = st.tabs([
-        "📊 Escalas Sincronizadas", "🎸 Gestão de Músicos", "🎶 Repertório & Cifras", "🩰 Ministério de Dança", "📖 Devocional & Alertas"
+        "📊 Escalas Sincronizadas", "🎸 Gestão de Músicos", "🎶 Repertório & Cifras", "🩰 Ministério de Dança", "📖 Devocional & Bíblia"
     ])
 
 # 0. ABA PRINCIPAL RESTRITA AO ADMINISTRADOR
@@ -501,7 +473,7 @@ with aba_escalas:
                         st.success("Registro excluído com sucesso!")
                         st.rerun()
 
-# 2. ABA DE MÚSICOS (COM OS MENUS SUSPENSOS SOLICITADOS)
+# 2. ABA DE MÚSICOS (COM OS MENUS SUSPENSOS AUTOMATIZADOS)
 with aba_musicos:
     st.subheader("🎸 Equipe de Músicos & Instrumentos")
     if st.session_state.musicos:
@@ -514,32 +486,32 @@ with aba_musicos:
         st.markdown("---")
         st.markdown("### ➕ Cadastrar Novo Músico")
         
-        # Mapeamento dinâmico dos nomes vindos dos participantes cadastrados pelo administrador
         nomes_participantes_musicos = [p["Nome"] for p in st.session_state.participantes] if st.session_state.participantes else ["João Silva", "Maria Oliveira"]
 
-        # Mapeamento das categorias e seus respectivos instrumentos principais
-        categorias_instrumentos = {
+        # Mapeamento completo e detalhado de categorias e instrumentos solicitado
+        mapa_instrumentos_completo = {
+            "Teclado": ["Teclado", "Synthesizer", "Workstation"],
+            "Piano": ["Piano Acústico", "Piano Digital"],
+            "Órgão": ["Órgão Eletrônico", "Órgão de Tubos"],
+            "Bateria": ["Bateria Acústica", "Bateria Eletrônica"],
+            "Percussão": ["Cajón", "Bongô", "Pandeiro", "Congas", "Timbales", "Percussão Geral"],
             "Cordas": ["Violão", "Guitarra", "Contrabaixo", "Violino", "Viola", "Ukulele", "Cello"],
-            "Teclas": ["Teclado", "Piano", "Órgão", "Sintetizador"],
-            "Percussão / Bateria": ["Bateria", "Cajon", "Bongô", "Pandeiro", "Congas", "Timbales"],
-            "Outros": ["Flauta", "Saxofone", "Trompete", "Clarinet", "Vocal"]
+            "Vocal / Geral": ["Ministro de Louvor", "Backing Vocal", "Vocal"]
         }
 
         with st.form("form_novo_musico"):
             col_m1, col_m2, col_m3 = st.columns(3)
             
             with col_m1:
-                # Menu suspenso refletindo os nomes cadastrados pelo administrador
                 nome_musico = st.selectbox("Nome do Músico", [""] + nomes_participantes_musicos)
             
             with col_m2:
-                # Menu suspenso com as categorias predefinidas
-                categoria_inst = st.selectbox("Categoria", list(categorias_instrumentos.keys()))
+                categoria_selecionada = st.selectbox("Categoria", list(mapa_instrumentos_completo.keys()))
             
             with col_m3:
-                # Menu suspenso inteligente cujo conteúdo muda conforme a categoria selecionada acima
-                instrumentos_da_categoria = categorias_instrumentos.get(categoria_inst, ["Outro"])
-                instrumento_especifico = st.selectbox("Instrumento Principal", instrumentos_da_categoria)
+                # Automação instantânea: atualiza os instrumentos com base na categoria selecionada no menu anterior
+                instrumentos_disponiveis = mapa_instrumentos_completo.get(categoria_selecionada, ["Outro"])
+                instrumento_principal = st.selectbox("Instrumento Principal", instrumentos_disponiveis)
 
             if st.form_submit_button("➕ Cadastrar Músico"):
                 if nome_musico:
@@ -547,11 +519,11 @@ with aba_musicos:
                     st.session_state.musicos.append({
                         "ID": novo_id,
                         "Nome": nome_musico,
-                        "Instrumento": instrumento_especifico,
-                        "Categoria": categoria_inst
+                        "Instrumento": instrumento_principal,
+                        "Categoria": categoria_selecionada
                     })
                     salvar_dados_sistema()
-                    registrar_alerta(f"Músico cadastrado: {nome_musico} ({instrumento_especifico}).")
+                    registrar_alerta(f"Músico cadastrado: {nome_musico} ({instrumento_principal}).")
                     st.success(f"Músico {nome_musico} adicionado com sucesso!")
                     st.rerun()
                 else:
@@ -568,7 +540,7 @@ with aba_musicos:
 
             with st.form("form_editar_excluir_musico"):
                 ed_nome = st.text_input("Nome do Músico", value=musico_selecionado["Nome"])
-                ed_cat = st.selectbox("Categoria", ["Cordas", "Teclas", "Percussão / Bateria", "Outros"], index=["Cordas", "Teclas", "Percussão / Bateria", "Outros"].index(musico_selecionado["Categoria"]) if musico_selecionado["Categoria"] in ["Cordas", "Teclas", "Percussão / Bateria", "Outros"] else 0)
+                ed_cat = st.selectbox("Categoria", list(mapa_instrumentos_completo.keys()), index=list(mapa_instrumentos_completo.keys()).index(musico_selecionado["Categoria"]) if musico_selecionado["Categoria"] in mapa_instrumentos_completo else 0)
                 ed_inst = st.text_input("Instrumento Principal", value=musico_selecionado["Instrumento"])
 
                 col_b1, col_b2 = st.columns(2)
@@ -653,42 +625,111 @@ with aba_danca:
                 }
                 st.session_state.danca.append(novo_registro_danca)
                 salvar_dados_sistema()
-                registrar_alerta(f"Novo registro adicionado no Ministério de Dança para {d_data.strftime('%d/%m/%Y')}.")
-                st.success("Registro de dança adicionado!")
+                registrar_alerta(f"Registro de dança adicionado para o dia {d_data.strftime('%d/%m/%Y')}.")
+                st.success("Registro adicionado com sucesso!")
                 st.rerun()
 
         if st.session_state.danca:
-            st.markdown("---")
-            st.markdown("### 🗑️ Excluir Registro de Dança")
-            ids_danca_disponiveis = [item["ID"] for item in st.session_state.danca]
-            id_danca_para_excluir = st.selectbox("Selecione o ID do registro de dança para excluir", ids_danca_disponiveis, key="del_danca_select")
-            if st.button("🗑️ Excluir Registro de Dança Selecionado", key="btn_del_danca"):
-                st.session_state.danca = [item for item in st.session_state.danca if item["ID"] != id_danca_para_excluir]
+            ids_danca = [d["ID"] for d in st.session_state.danca]
+            id_del_d = st.selectbox("Selecione o ID do registro de dança para excluir", ids_danca)
+            if st.button("🗑️ Excluir Registro de Dança"):
+                st.session_state.danca = [d for d in st.session_state.danca if d["ID"] != id_del_d]
                 salvar_dados_sistema()
-                registrar_alerta(f"Registro de dança ID {id_danca_para_excluir} foi removido.")
-                st.success("Registro de dança excluído com sucesso!")
+                registrar_alerta(f"Registro de dança ID {id_del_d} removido.")
+                st.success("Registro removido com sucesso!")
                 st.rerun()
 
-# 5. ABA DE DEVOCIONAL E ALERTAS
+# 5. ABA DE DEVOCIONAL & BÍBLIA (SINCRONIZADA COM O SITE DA BÍBLIA ONLINE)
 with aba_devocional:
-    st.subheader("📖 Histórico de Modificações & Alertas")
-    st.info("💡 Sempre que abrir o link do aplicativo, esta aba exibirá o histórico completo e cronológico de todas as modificações feitas pela liderança.")
+    st.subheader("📖 Devocional, Versículo & Bíblia Online")
     
+    # Bloco do versículo automático por horário (BKJ 1611)
+    lista_versiculos_bkj1611 = [
+        {
+            "texto": "Ó Deus, tu és o meu Deus; de madrugada te busco; a minha alma tem sede de ti; a minha carne te deseja em uma terra seca e cansada, onde não há água.",
+            "referencia": "Salmos 63:1 (BKJ 1611)"
+        },
+        {
+            "texto": "Cantai ao Senhor um cântico novo; cantai ao Senhor, toda a terra. Cantai ao Senhor, bendizei o seu nome; anunciai a sua salvação de dia em dia.",
+            "referencia": "Salmos 96:1-2 (BKJ 1611)"
+        },
+        {
+            "texto": "E tudo quanto fizerdes, fazei-o de todo o coração, como ao Senhor, e não aos homens; sabendo que recebereis do Senhor o galardão da herança, porque a Cristo, o Senhor, servis.",
+            "referencia": "Colossenses 3:23-24 (BKJ 1611)"
+        }
+    ]
+
+    total_minutos_atual = int(datetime.now().timestamp() // 60)
+    bloco_index = (total_minutos_atual // 90) % len(lista_versiculos_bkj1611)
+    versiculo_da_vez = lista_versiculos_bkj1611[bloco_index]
+
+    st.markdown(f"""
+        <div class='bloco-versiculo'>
+            <h3 style='margin-bottom: 5px; color: #ffffff;'>📖 Palavra para Edificação (Versão BKJ 1611)</h3>
+            <p style='font-size: 16px; font-style: italic; margin-bottom: 8px; color: #f0fdf4;'>“{versiculo_da_vez['texto']}”</p>
+            <p style='text-align: right; font-weight: bold; margin: 0; color: #bbf7d0;'>— {versiculo_da_vez['referencia']}</p>
+        </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown("### 🌐 Seletor de Traduções da Bíblia (Sincronizado)")
+    st.info("💡 Este menu de traduções fica aberto e acessível a todos os usuários para escolher a versão desejada da Bíblia.")
+
+    # Menu suspenso de traduções idêntico ao solicitado e sincronizado com o site bíblico
+    col_t, col_b = st.columns([3, 1])
+    with col_t:
+        traducao_biblia_escolhida = st.selectbox(
+            "Selecione a Tradução da Bíblia",
+            options=[
+                "Almeida Corrigida Fiel (ACF)",
+                "Nova Versão Internacional (NVI)",
+                "Almeida Revista e Atualizada (ARA)",
+                "Nova Almeida Atualizada (NAA)",
+                "Nova Tradução na Linguagem de Hoje (NTLH)",
+                "Almeida Revista e Corrigida (ARC)",
+                "King James Atualizada (KJA)"
+            ],
+            index=0
+        )
+    with col_b:
+        st.write("")
+        st.write("")
+        if st.button("🔄 Atualizar Versículo"):
+            st.rerun()
+
+    # Mapeamento das siglas correspondentes ao site oficial da Bíblia Online
+    sigla_map_site = {
+        "Almeida Corrigida Fiel (ACF)": "acf",
+        "Nova Versão Internacional (NVI)": "nvi",
+        "Almeida Revista e Atualizada (ARA)": "ara",
+        "Nova Almeida Atualizada (NAA)": "naa",
+        "Nova Tradução na Linguagem de Hoje (NTLH)": "ntlh",
+        "Almeida Revista e Corrigida (ARC)": "arc",
+        "King James Atualizada (KJA)": "kja"
+    }
+    sigla_escolhida = sigla_map_site.get(traducao_biblia_escolhida, "acf")
+
+    # Link sincronizado direto para a Bíblia Online com a tradução selecionada
+    link_biblia_online = f"https://www.bibliaonline.com.br/{sigla_escolhida}/sl/119/105"
+
+    st.markdown(f"""
+        <div class="bloco-admin">
+            <h4>📖 Passagem de Referência ({traducao_biblia_escolhida})</h4>
+            <p style="font-size: 16px; font-style: italic;">“Lâmpada para os meus pés é tua palavra, e luz para o meu caminho.” — Salmos 119:105</p>
+            <br>
+            <a href="{link_biblia_online}" target="_blank" style="background-color: #16a34a; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold;">🔗 Abrir Salmos 119:105 na Bíblia Online ({traducao_biblia_escolhida})</a>
+        </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("---")
+    st.markdown("### 🔔 Histórico de Alertas e Notificações do Sistema")
     if st.session_state.logs_notificacoes:
-        st.markdown("---")
-        for log in st.session_state.logs_notificacoes:
-            if isinstance(log, dict):
-                data_log = log.get("data", "")
-                msg_log = log.get("mensagem", "")
-            else:
-                data_log = "Registro anterior"
-                msg_log = str(log)
-                
+        for log in st.session_state.logs_notificacoes[:10]:
             st.markdown(f"""
                 <div class='alerta-item'>
-                    <span style='font-size: 12px; color: #94a3b8; font-weight: bold;'>🕒 {data_log}</span><br>
-                    <span style='font-size: 15px; color: #f8fafc;'>{msg_log}</span>
+                    <small style='color: #4ade80; font-weight: bold;'>📅 {log['data']}</small><br>
+                    <span style='color: #f8fafc;'>{log['mensagem']}</span>
                 </div>
             """, unsafe_allow_html=True)
     else:
-        st.success("Nenhuma alteração registrada recentemente no sistema.")
+        st.info("Nenhum registro de alerta recente.")
