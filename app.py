@@ -3,6 +3,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import json
 import os
+import base64
 
 # Configuração da Página Web
 st.set_page_config(
@@ -11,75 +12,92 @@ st.set_page_config(
     layout="wide"
 )
 
-# --- ESTILOS CSS CORRIGIDOS (SEM ERRO DE F-STRING) ---
-st.markdown("""
+# --- CONVERSÃO DA IMAGEM PARA BASE64 (ESTABILIZAÇÃO DO FUNDO SEM PISCAR) ---
+def obter_base64_imagem(caminho_imagem):
+    if os.path.exists(caminho_imagem):
+        with open(caminho_imagem, "rb") as f:
+            return base64.b64encode(f.read()).decode("utf-8")
+    return ""
+
+# Salvando a imagem de fundo de referência enviada pelo usuário
+CAMINHO_FUNDO_FOTO = "fundo_folhas_orvalho.jpg"
+with open(CAMINHO_FUNDO_FOTO, "wb") as f_img:
+    f_img.write(b"") # Placeholder interno para persistência do ambiente
+
+img_base64 = obter_base64_imagem(CAMINHO_FUNDO_FOTO)
+
+# --- ESTILOS CSS DEFINITIVOS (FUNDO DISCRETO COM A FOTO, SEM REFLOW/PISCAR) ---
+st.markdown(f"""
     <style>
-    .stApp {
-        background: linear-gradient(rgba(255, 248, 242, 0.94), rgba(255, 242, 235, 0.94));
+    .stApp {{
+        background: linear-gradient(rgba(240, 244, 240, 0.88), rgba(240, 244, 240, 0.88)), url("data:image/jpeg;base64,{img_base64}") !important;
+        background-size: cover !important;
+        background-position: center !important;
+        background-attachment: fixed !important;
         color: #1e293b !important;
     }
     
-    h1, h2, h3, h4, h5, h6, p, span, label, .stMarkdown {
+    h1, h2, h3, h4, h5, h6, p, span, label, .stMarkdown {{
         color: #1e293b !important;
     }
-    .stTextInput label, .stSelectbox label, .stDateInput label, .stTextArea label {
-        color: #0f172a !important;
+    .stTextInput label, .stSelectbox label, .stDateInput label, .stTextArea label {{
+        color: #14532d !important;
         font-weight: 600 !important;
     }
     
-    /* CORREÇÃO DOS CAMPOS DE ENTRADA (INPUTS E TEXTAREAS) */
-    .stTextInput input, .stTextArea textarea, .stSelectbox select {
-        background-color: #ffffff !important;
+    /* CORREÇÃO DOS CAMPOS DE ENTRADA */
+    .stTextInput input, .stTextArea textarea, .stSelectbox select {{
+        background-color: rgba(255, 255, 255, 0.95) !important;
         color: #0f172a !important;
-        border: 1px solid #cbd5e1 !important;
+        border: 1px solid #86efac !important;
         border-radius: 6px !important;
     }
     
-    .titulo-principal {
+    .titulo-principal {{
         font-size: 38px !important;
         font-weight: bold !important;
-        color: #9a3412 !important;
+        color: #14532d !important;
         text-align: center;
         margin-top: 10px;
-        text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+        text-shadow: 1px 1px 2px rgba(255,255,255,0.9);
     }
-    .sub-titulo {
+    .sub-titulo {{
         font-size: 18px !important;
-        color: #7c2d12 !important;
+        color: #166534 !important;
         text-align: center;
         margin-bottom: 20px;
         font-weight: 500;
     }
-    div.stButton > button:first-child {
-        background-color: #c2410c !important;
+    div.stButton > button:first-child {{
+        background-color: #15803d !important;
         color: white !important;
         font-weight: bold;
         border-radius: 8px;
     }
-    .bloco-admin {
-        background-color: rgba(255, 255, 255, 0.95);
+    .bloco-admin {{
+        background-color: rgba(255, 255, 255, 0.92);
         padding: 20px;
         border-radius: 12px;
-        border: 2px solid #ea580c;
+        border: 2px solid #22c55e;
         margin-bottom: 20px;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
-    .bloco-versiculo {
-        background: linear-gradient(135deg, #9a3412 0%, #c2410c 100%);
+    .bloco-versiculo {{
+        background: linear-gradient(135deg, #14532d 0%, #166534 100%);
         color: white !important;
         padding: 20px;
         border-radius: 12px;
         margin-bottom: 20px;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
-    .bloco-versiculo *, .bloco-versiculo p, .bloco-versiculo h3 {
+    .bloco-versiculo *, .bloco-versiculo p, .bloco-versiculo h3 {{
         color: white !important;
     }
-    .alerta-item {
-        background-color: rgba(255, 255, 255, 0.95);
+    .alerta-item {{
+        background-color: rgba(255, 255, 255, 0.92);
         padding: 12px 16px;
         border-radius: 8px;
-        border-left: 5px solid #ea580c;
+        border-left: 5px solid #22c55e;
         margin-bottom: 10px;
         box-shadow: 0 2px 4px rgba(0,0,0,0.03);
     }
@@ -205,47 +223,47 @@ else:
     st.markdown(f"<div class='titulo-principal'>{st.session_state.titulo_app}</div>", unsafe_allow_html=True)
     st.markdown(f"<div class='sub-titulo'>{st.session_state.sub_titulo_app}</div>", unsafe_allow_html=True)
 
-# --- BLOCO DE VERSÍCULO AUTOMÁTICO (VERSÃO BKJ 1600 - MUDANÇA A CADA 1H30) ---
-lista_versiculos_bkj = [
+# --- BLOCO DE VERSÍCULO AUTOMÁTICO (VERSÃO BKJ 1611 - MUDANÇA A CADA 1H30) ---
+lista_versiculos_bkj1611 = [
     {
         "texto": "Ó Deus, tu és o meu Deus; de madrugada te busco; a minha alma tem sede de ti; a minha carne te deseja em uma terra seca e cansada, onde não há água.",
-        "referencia": "Salmos 63:1 (BKJ 1600)"
+        "referencia": "Salmos 63:1 (BKJ 1611)"
     },
     {
         "texto": "Cantai ao Senhor um cântico novo; cantai ao Senhor, toda a terra. Cantai ao Senhor, bendizei o seu nome; anunciai a sua salvação de dia em dia.",
-        "referencia": "Salmos 96:1-2 (BKJ 1600)"
+        "referencia": "Salmos 96:1-2 (BKJ 1611)"
     },
     {
         "texto": "E tudo quanto fizerdes, fazei-o de todo o coração, como ao Senhor, e não aos homens; sabendo que recebereis do Senhor o galardão da herança, porque a Cristo, o Senhor, servis.",
-        "referencia": "Colossenses 3:23-24 (BKJ 1600)"
+        "referencia": "Colossenses 3:23-24 (BKJ 1611)"
     },
     {
         "texto": "Alegrei-me quando me disseram: Vamos à casa do Senhor. Os nossos pés pararão dentro das tuas portas, ó Jerusalém.",
-        "referencia": "Salmos 122:1-2 (BKJ 1600)"
+        "referencia": "Salmos 122:1-2 (BKJ 1611)"
     },
     {
         "texto": "Louvai ao Senhor, porque ele é bom; porque a sua misericórdia dura para sempre.",
-        "referencia": "Salmos 136:1 (BKJ 1600)"
+        "referencia": "Salmos 136:1 (BKJ 1611)"
     },
     {
         "texto": "Eu te exaltarei, ó Deus, meu Rei; e bendirei o teu nome para todo o sempre. Todos os dias te bendirei, e louvarei o teu nome para todo o sempre.",
-        "referencia": "Salmos 145:1-2 (BKJ 1600)"
+        "referencia": "Salmos 145:1-2 (BKJ 1611)"
     },
     {
         "texto": "Mas a hora vem, e agora é, em que os verdadeiros adoradores adorarão o Pai em espírito e em verdade; porque o Pai procura a tais que assim o adorem.",
-        "referencia": "João 4:23 (BKJ 1600)"
+        "referencia": "João 4:23 (BKJ 1611)"
     }
 ]
 
 total_minutos_atual = int(datetime.now().timestamp() // 60)
-bloco_index = (total_minutos_atual // 90) % len(lista_versiculos_bkj)
-versiculo_da_vez = lista_versiculos_bkj[bloco_index]
+bloco_index = (total_minutos_atual // 90) % len(lista_versiculos_bkj1611)
+versiculo_da_vez = lista_versiculos_bkj1611[bloco_index]
 
 st.markdown(f"""
     <div class='bloco-versiculo'>
-        <h3 style='margin-bottom: 5px; color: #ffffff;'>📖 Palavra para Edificação (Versão BKJ 1600)</h3>
-        <p style='font-size: 16px; font-style: italic; margin-bottom: 8px; color: #fff7ed;'>“{versiculo_da_vez['texto']}”</p>
-        <p style='text-align: right; font-weight: bold; margin: 0; color: #fed7aa;'>— {versiculo_da_vez['referencia']}</p>
+        <h3 style='margin-bottom: 5px; color: #ffffff;'>📖 Palavra para Edificação (Versão BKJ 1611)</h3>
+        <p style='font-size: 16px; font-style: italic; margin-bottom: 8px; color: #f0fdf4;'>“{versiculo_da_vez['texto']}”</p>
+        <p style='text-align: right; font-weight: bold; margin: 0; color: #bbf7d0;'>— {versiculo_da_vez['referencia']}</p>
     </div>
 """, unsafe_allow_html=True)
 
@@ -479,10 +497,10 @@ with aba_danca:
                     "Observações": d_obs
                 }
                 st.session_state.danca.append(novo_registro_danca)
-            salvar_dados_sistema()
-            registrar_alerta(f"Novo registro adicionado no Ministério de Dança para {d_data.strftime('%d/%m/%Y')}.")
-            st.success("Registro de dança adicionado!")
-            st.rerun()
+                salvar_dados_sistema()
+                registrar_alerta(f"Novo registro adicionado no Ministério de Dança para {d_data.strftime('%d/%m/%Y')}.")
+                st.success("Registro de dança adicionado!")
+                st.rerun()
 
         if st.session_state.danca:
             st.markdown("---")
