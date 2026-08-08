@@ -492,8 +492,8 @@ with aba_musicos:
 
         categorias_instrumentos = {
             "Cordas": ["Violão", "Guitarra", "Contrabaixo", "Violino", "Viola", "Ukulele", "Cello"],
-            "Teclas": ["Teclado", "Piano", "Órgão", "Sintetizador"],
-            "Percussão / Bateria": ["Bateria", "Cajon", "Bongô", "Pandeiro", "Congas", "Timbales", "Percussão Geral"],
+            "Teclas": ["Teclado", "Piano", "Órgão", "Sintetizador", "Piano Digital", "Painel de Teclas"],
+            "Percussão / Bateria": ["Bateria", "Percussão", "Cajon", "Bongô", "Pandeiro", "Congas", "Timbales", "Percussão Geral"],
             "Outros": ["Flauta", "Saxofone", "Trompete", "Clarinete", "Vocal"]
         }
 
@@ -642,7 +642,7 @@ with aba_danca:
 with aba_devocional:
     st.subheader("📖 Palavra para Edificação & Alertas do Sistema")
     
-    # Seletor público aberto de versões da Bíblia espelhado de bibliaonline.com.br/acf
+    # Versões completas espelhadas do site bibliaonline.com.br/acf para Colossenses 3:23-24
     versoes_biblia = {
         "ACF - Almeida Corrigida Fiel": {
             "referencia": "Colossenses 3:23-24 (ACF)",
@@ -670,9 +670,11 @@ with aba_devocional:
         }
     }
 
-    versao_escolhida = st.selectbox("📚 Escolha a Versão da Bíblia (Sincronizado com Biblia Online)", list(versoes_biblia.keys()))
+    # Botão / Seletor de versão aberto e visível para qualquer usuário na aba Palavra para Edificação
+    versao_escolhida = st.selectbox("📚 Escolha a Versão da Bíblia (Sincronizado com o site Biblia Online)", list(versoes_biblia.keys()))
     dados_versiculo = versoes_biblia[versao_escolhida]
 
+    # Exibição limpa e única do versículo correspondente à versão selecionada (sem duplicidade)
     st.markdown(f"""
         <div class='bloco-versiculo'>
             <h3 style='margin-bottom: 5px; color: #ffffff;'>📖 Palavra para Edificação</h3>
