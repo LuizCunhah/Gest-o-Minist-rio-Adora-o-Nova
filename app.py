@@ -228,14 +228,13 @@ if not st.session_state.usuarios_adm:
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
-# --- EXIBIÇÃO ABSOLUTA DA IMAGEM DO BANNER (COM CAMINHO DINÂMICO SEGURO) ---
+# --- EXIBIÇÃO ABSOLUTA DA IMAGEM DO BANNER ---
 caminho_script_atual = os.path.dirname(os.path.abspath(__file__))
 CAMINHO_BANNER = os.path.join(caminho_script_atual, "NOVA-NITEROI-Rj_4.jpg")
 
 if os.path.exists(CAMINHO_BANNER):
     st.image(CAMINHO_BANNER, use_container_width=True)
 else:
-    # Tenta um caminho direto alternativo caso o ambiente mude a raiz
     CAMINHO_BANNER_ALT = "NOVA-NITEROI-Rj_4.jpg"
     if os.path.exists(CAMINHO_BANNER_ALT):
         st.image(CAMINHO_BANNER_ALT, use_container_width=True)
@@ -554,20 +553,21 @@ with aba_musicos:
             
             musico_selecionado = opcoes_musicos[escolha_musico_str]
 
-            with st.form("form_editar_excluir_musico"):
-                ed_nome = st.text_input("Nome do Músico", value=musico_selecionado["Nome"])
-                ed_cat = st.selectbox("Categoria", lista_categorias_exatas, index=lista_categorias_exatas.index(musico_selecionado["Categoria"]) if musico_selecionado["Categoria"] in lista_categorias_exatas else 0)
-                
-                ed_inst_lista = mapa_instrumentos_igreja.get(ed_cat, ["Outro"])
-                ed_inst = st.selectbox("Instrumento Principal", ed_inst_lista, index=ed_inst_lista.index(musico_selecionado["Instrumento"]) if musico_selecionado["Instrumento"] in ed_inst_lista else 0)
+            # Correção aplicada: Removido o st.form para permitir atualização dinâmica dos instrumentos ao mudar a categoria
+            ed_nome = st.text_input("Nome do Músico", value=musico_selecionado["Nome"], key="ed_nome_musico_ativo")
+            
+            # Garante que a categoria inicial seja válida
+            cat_atual_idx = lista_categorias_exatas.index(musico_selecionado["Categoria"]) if musico_selecionado["Categoria"] in lista_categorias_exatas else 0
+            ed_cat = st.selectbox("Categoria", lista_categorias_exatas, index=cat_atual_idx, key="ed_cat_musico_ativo")
+            
+            ed_inst_lista = mapa_instrumentos_igreja.get(ed_cat, ["Outro"])
+            
+            inst_atual_idx = ed_inst_lista.index(musico_selecionado["Instrumento"]) if musico_selecionado["Instrumento"] in ed_inst_lista else 0
+            ed_inst = st.selectbox("Instrumento Principal", ed_inst_lista, index=inst_atual_idx, key="ed_inst_musico_ativo")
 
-                col_b1, col_b2 = st.columns(2)
-                with col_b1:
-                    btn_salvar_edicao = st.form_submit_button("💾 Salvar Alterações")
-                with col_b2:
-                    btn_excluir_musico = st.form_submit_button("🗑️ Excluir Músico")
-
-                if btn_salvar_edicao:
+            col_b1, col_b2 = st.columns(2)
+            with col_b1:
+                if st.button("💾 Salvar Alterações", key="btn_salvar_musico_dinamico"):
                     for m in st.session_state.musicos:
                         if m["ID"] == musico_selecionado["ID"]:
                             m["Nome"] = ed_nome
@@ -578,8 +578,8 @@ with aba_musicos:
                     registrar_alerta(f"Músico atualizado: {ed_nome}.")
                     st.success("Músico atualizado com sucesso!")
                     st.rerun()
-
-                if btn_excluir_musico:
+            with col_b2:
+                if st.button("🗑️ Excluir Músico", key="btn_excluir_musico_dinamico"):
                     st.session_state.musicos = [m for m in st.session_state.musicos if m["ID"] != musico_selecionado["ID"]]
                     salvar_dados_sistema()
                     registrar_alerta(f"Músico removido: {musico_selecionado['Nome']}.")
