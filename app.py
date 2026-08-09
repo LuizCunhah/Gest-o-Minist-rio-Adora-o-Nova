@@ -228,12 +228,19 @@ if not st.session_state.usuarios_adm:
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
-# --- EXIBIÇÃO ROBUSTA DO BANNER NO TOPO ABSOLUTO ---
-CAMINHO_BANNER = "NOVA-NITEROI-Rj_4.jpg"
+# --- EXIBIÇÃO ABSOLUTA DA IMAGEM DO BANNER (COM CAMINHO DINÂMICO SEGURO) ---
+caminho_script_atual = os.path.dirname(os.path.abspath(__file__))
+CAMINHO_BANNER = os.path.join(caminho_script_atual, "NOVA-NITEROI-Rj_4.jpg")
+
 if os.path.exists(CAMINHO_BANNER):
     st.image(CAMINHO_BANNER, use_container_width=True)
 else:
-    st.warning("⚠️ Imagem do banner não encontrada na pasta. Verifique se o arquivo 'NOVA-NITEROI-Rj_4.jpg' foi enviado corretamente para o repositório.")
+    # Tenta um caminho direto alternativo caso o ambiente mude a raiz
+    CAMINHO_BANNER_ALT = "NOVA-NITEROI-Rj_4.jpg"
+    if os.path.exists(CAMINHO_BANNER_ALT):
+        st.image(CAMINHO_BANNER_ALT, use_container_width=True)
+    else:
+        st.warning(f"⚠️ Imagem do banner não encontrada no diretório atual ({caminho_script_atual}). Certifique-se de que o arquivo 'NOVA-NITEROI-Rj_4.jpg' está na raiz do repositório.")
 
 st.markdown(f"<div class='titulo-principal'>{st.session_state.titulo_app}</div>", unsafe_allow_html=True)
 st.markdown(f"<div class='sub-titulo'>{st.session_state.sub_titulo_app}</div>", unsafe_allow_html=True)
