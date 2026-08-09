@@ -105,7 +105,7 @@ css_fundo = f"""
 
 st.markdown(f"<style>{css_fundo}</style>", unsafe_allow_html=True)
 
-# --- INICIALIZAÇÃO DE VARIÁVEIS NA MEMÓRIA ---
+# --- INICIALIZAÇÃO DE VARIÁVEIS NA MEMÓRIA (STATE) ---
 if 'usuarios_adm' not in st.session_state:
     if "admin_username" in st.secrets and "admin_password" in st.secrets:
         st.session_state.usuarios_adm = {st.secrets["admin_username"]: st.secrets["admin_password"]}
@@ -170,7 +170,7 @@ if not st.session_state.logado:
     st.markdown("### 🔒 Acesso Público (Visualização Livre) / Painel Administrativo")
     st.info("💡 Todos podem navegar livremente pelo aplicativo. Insira as credenciais abaixo apenas se precisar alterar dados na aba principal restrita:")
     
-    col_login_user, col_login_pass, col_login_btn = st.columns([3, 3, 2])
+    col_login_user, col_login_pass, col_login_btn = st.columns(3)
     with col_login_user:
         login_u = st.text_input("Usuário ADM", key="login_usuario_interface")
     with col_login_pass:
@@ -186,7 +186,7 @@ if not st.session_state.logado:
             else:
                 st.error("Credenciais incorretas.")
 else:
-    col_inf1, col_inf2 = st.columns([6, 2])
+    col_inf1, col_inf2 = st.columns(2)
     with col_inf1:
         st.markdown(f"🟢 **Modo Administrador Ativo (Logado como: {st.session_state.usuario_atual})**. Gestão total liberada na aba principal.")
     with col_inf2:
@@ -232,7 +232,7 @@ if st.session_state.logado:
             with col_p2:
                 p_end = st.text_input("Endereço")
                 p_aniv = st.text_input("Data de Aniversário (ex: DD/MM)")
-                p_sug = st.text_area("Sugestões / Observations")
+                p_sug = st.text_area("Sugestões / Observações")
 
             if st.form_submit_button("➕ Cadastrar Participante"):
                 if p_nome:
