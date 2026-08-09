@@ -115,7 +115,6 @@ ARQUIVO_MUSICOS = "dados_musicos.json"
 ARQUIVO_PARTICIPANTES = "dados_participantes.json"
 
 def carregar_dados_sistema():
-    # SOLUÇÃO DE SEGURANÇA: Verifica primeiro se há um login definitivo configurado nos Segredos da Nuvem
     if "admin_username" in st.secrets and "admin_password" in st.secrets:
         st.session_state.usuarios_adm = {st.secrets["admin_username"]: st.secrets["admin_password"]}
     else:
@@ -124,7 +123,6 @@ def carregar_dados_sistema():
     if os.path.exists(ARQUIVO_CONFIG):
         with open(ARQUIVO_CONFIG, "r", encoding="utf-8") as f:
             cfg = json.load(f)
-            # Se não houver segredos na nuvem, tenta resgatar o backup local
             if not st.session_state.usuarios_adm:
                 st.session_state.usuarios_adm = cfg.get("usuarios", {"admin": "admin123"})
             st.session_state.titulo_app = cfg.get("titulo", "Adoração Nova Niterói")
@@ -132,7 +130,7 @@ def carregar_dados_sistema():
             st.session_state.nomes_extensoes = cfg.get("extensoes", ["Sede Piratininga", "Extensão São Gonçalo", "Extensão Maricá"])
     else:
         if not st.session_state.usuarios_adm:
-            st.session_state.usuarios_adm = {"admin": "admin123"} # Senha padrão inicial caso use localmente
+            st.session_state.usuarios_adm = {"admin": "admin123"}
         st.session_state.titulo_app = "Adoração Nova Niterói"
         st.session_state.sub_titulo_app = "Sistema Integrado de Gestão de Louvor, Artes e Escalas"
         st.session_state.nomes_extensoes = ["Sede Piratininga", "Extensão São Gonçalo", "Extensão Maricá"]
@@ -244,3 +242,7 @@ CAMINHO_BANNER = os.path.join(caminho_script_atual, "NOVA-NITEROI-Rj_4.jpg")
 if os.path.exists(CAMINHO_BANNER):
     st.image(CAMINHO_BANNER, use_container_width=True)
 else:
+    CAMINHO_BANNER_ALT = "NOVA-NITEROI-Rj_4.jpg"
+    if os.path.exists(CAMINHO_BANNER_ALT):
+        st.image(CAMINHO_BANNER_ALT, use_container_width=True)
+    else:
