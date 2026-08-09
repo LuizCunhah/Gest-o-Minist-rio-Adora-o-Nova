@@ -105,7 +105,7 @@ css_fundo = f"""
 
 st.markdown(f"<style>{css_fundo}</style>", unsafe_allow_html=True)
 
-# --- INICIALIZAÇÃO DE VARIÁVEIS NA MEMÓRIA (STATE) ---
+# --- INICIALIZAÇÃO DE VARIÁVEIS NA MEMÓRIA ---
 if 'usuarios_adm' not in st.session_state:
     if "admin_username" in st.secrets and "admin_password" in st.secrets:
         st.session_state.usuarios_adm = {st.secrets["admin_username"]: st.secrets["admin_password"]}
