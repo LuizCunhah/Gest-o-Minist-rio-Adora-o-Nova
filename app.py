@@ -20,14 +20,6 @@ if os.path.exists(CAMINHO_FUNDO_FOTO):
 else:
     img_base64 = ""
 
-# --- CONVERSÃO DO BANNER PARA BASE64 (GARANTIA DE EXIBIÇÃO) ---
-CAMINHO_BANNER = "NOVA-NITEROI-Rj_4.jpg"
-if os.path.exists(CAMINHO_BANNER):
-    with open(CAMINHO_BANNER, "rb") as f:
-        banner_base64 = base64.b64encode(f.read()).decode("utf-8")
-else:
-    banner_base64 = ""
-
 # --- ESTILOS CSS ---
 css_fundo = f"""
     .stApp {{
@@ -130,13 +122,11 @@ def carregar_dados_sistema():
             st.session_state.titulo_app = cfg.get("titulo", "Adoração Nova Niterói")
             st.session_state.sub_titulo_app = cfg.get("subtitulo", "Sistema Integrado de Gestão de Louvor, Artes e Escalas")
             st.session_state.nomes_extensoes = cfg.get("extensoes", ["Sede Piratininga", "Extensão São Gonçalo", "Extensão Maricá"])
-            st.session_state.banner_path = cfg.get("banner", "")
     else:
         st.session_state.usuarios_adm = {}
         st.session_state.titulo_app = "Adoração Nova Niterói"
         st.session_state.sub_titulo_app = "Sistema Integrado de Gestão de Louvor, Artes e Escalas"
         st.session_state.nomes_extensoes = ["Sede Piratininga", "Extensão São Gonçalo", "Extensão Maricá"]
-        st.session_state.banner_path = ""
 
     if os.path.exists(ARQUIVO_ESCALAS):
         with open(ARQUIVO_ESCALAS, "r", encoding="utf-8") as f:
@@ -202,8 +192,7 @@ def salvar_dados_sistema():
             "usuarios": st.session_state.usuarios_adm,
             "titulo": st.session_state.titulo_app,
             "subtitulo": st.session_state.sub_titulo_app,
-            "extensoes": st.session_state.nomes_extensoes,
-            "banner": st.session_state.banner_path
+            "extensoes": st.session_state.nomes_extensoes
         }, f, ensure_ascii=False, indent=4)
 
 carregar_dados_sistema()
@@ -239,22 +228,15 @@ if not st.session_state.usuarios_adm:
     st.markdown("</div>", unsafe_allow_html=True)
     st.stop()
 
-# --- EXIBIÇÃO GARANTIDA DO BANNER NO TOPO ABSOLUTO ---
-# --- EXIBIÇÃO DO BANNER NO TOPO ABSOLUTO ---
+# --- EXIBIÇÃO ROBUSTA DO BANNER NO TOPO ABSOLUTO ---
 CAMINHO_BANNER = "NOVA-NITEROI-Rj_4.jpg"
 if os.path.exists(CAMINHO_BANNER):
-    with open(CAMINHO_BANNER, "rb") as f:
-        banner_base64 = base64.b64encode(f.read()).decode("utf-8")
-    st.markdown(
-        f"""
-        <div style="text-align: center; margin-bottom: 20px;">
-            <img src="data:image/jpeg;base64,{banner_base64}" style="width: 100%; max-height: 350px; object-fit: cover; border-radius: 8px; border: 2px solid #22c55e;" />
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    st.image(CAMINHO_BANNER, use_container_width=True)
 else:
-    st.warning("⚠️ Imagem do banner não encontrada na pasta. Verifique se o nome exato é 'NOVA-NITEROI-Rj_4.jpg'.")
+    st.warning("⚠️ Imagem do banner não encontrada na pasta. Verifique se o arquivo 'NOVA-NITEROI-Rj_4.jpg' foi enviado corretamente para o repositório.")
+
+st.markdown(f"<div class='titulo-principal'>{st.session_state.titulo_app}</div>", unsafe_allow_html=True)
+st.markdown(f"<div class='sub-titulo'>{st.session_state.sub_titulo_app}</div>", unsafe_allow_html=True)
 
 # --- SISTEMA DE LOGIN PÚBLICO / ADM ---
 st.markdown("<div class='bloco-admin'>", unsafe_allow_html=True)
