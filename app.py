@@ -115,6 +115,7 @@ ARQUIVO_MUSICOS = "dados_musicos.json"
 ARQUIVO_PARTICIPANTES = "dados_participantes.json"
 
 def carregar_dados_sistema():
+    # SOLUÇÃO DE SENHA PERMANENTE NA NUVEM: Prioriza ler as chaves mestre estáticas do servidor
     if "admin_username" in st.secrets and "admin_password" in st.secrets:
         st.session_state.usuarios_adm = {st.secrets["admin_username"]: st.secrets["admin_password"]}
     else:
@@ -123,6 +124,7 @@ def carregar_dados_sistema():
     if os.path.exists(ARQUIVO_CONFIG):
         with open(ARQUIVO_CONFIG, "r", encoding="utf-8") as f:
             cfg = json.load(f)
+            # Se não houver segredos no ambiente de nuvem, recupera os usuários locais persistidos
             if not st.session_state.usuarios_adm:
                 st.session_state.usuarios_adm = cfg.get("usuarios", {"admin": "admin123"})
             st.session_state.titulo_app = cfg.get("titulo", "Adoração Nova Niterói")
@@ -243,6 +245,3 @@ if os.path.exists(CAMINHO_BANNER):
     st.image(CAMINHO_BANNER, use_container_width=True)
 else:
     CAMINHO_BANNER_ALT = "NOVA-NITEROI-Rj_4.jpg"
-    if os.path.exists(CAMINHO_BANNER_ALT):
-        st.image(CAMINHO_BANNER_ALT, use_container_width=True)
-    else:
